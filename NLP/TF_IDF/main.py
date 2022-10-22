@@ -1,4 +1,4 @@
-from underthesea import sent_tokenize, text_normalize, word_tokenize
+from underthesea import text_normalize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 def get_stopwords_list(stop_file_path):
