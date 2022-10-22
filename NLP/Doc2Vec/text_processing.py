@@ -39,7 +39,7 @@ def get_stopwords_list(stop_file_path):
 
 def corpus_list(text):
     corpus = []
-    stopwords_path = "Continuous_BOW and Doc2Vec\\vietnamese_stopwords.txt"
+    stopwords_path = ".\\vietnamese_stopwords.txt"
     stopwords = get_stopwords_list(stopwords_path)
     for i in range(len(text)):
         word_list = word_tokenize(text[i])
@@ -59,18 +59,54 @@ def infer_vector_worker(document,model):
 
 
 if __name__ == '__main__':
-    hobit_A =  ' Minh # la mot nguoi huong noi thich boi loi va doc sach,thich an mi cay, uong caffe'
-    hobit_B = 'minh la mot nguoi thich da bong va nghe nhac'
-    # hobit = hobit.split(",")
-    # clean = clean_text(hobit) # chuyen hoa thanh thuong, xoa bo ky tu dac biet
-    # corpus = corpus_list(clean)
-    # tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(corpus)]
-    # print(tagged_data)
-    # model = Doc2Vec(tagged_data, vector_size=20, window=2, min_count=1, epochs=100)
-    # model.save("Testing.model")
-    # print("FINISH...")
+    file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+                "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    file_pd.columns = features
+    file_pd = file_pd.drop(columns=["Timestamp", "Unnamed"], axis=1)
+    hobit_A =  ' Minh # la mot nguoi uong cafe'
+    hobit_B = 'minh thich da bong va nau an'
+    # hobit = [' Minh # la mot nguoi huong noi thich boi loi va doc sach,thich an mi cay, uong caffe', 'minh la mot nguoi thich da bong va nghe nhac']
+    list_features = ["Bio_personality", "food_drink", "hobby_interests"]
+    size = 50
+    words_surrounding_term = 5
+    for feature in list_features:
+        clean = clean_text(file_pd[feature]) # chuyen hoa thanh thuong, xoa bo ky tu dac biet
+        corpus = corpus_list(clean)
+        tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(corpus)]
+        print(tagged_data)
+        model = Doc2Vec(vector_size=size, window=words_surrounding_term, min_count=1, epochs=100)
+        model.build_vocab(tagged_data)
+        model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
+        model.save("./{}/size {} words {}.model".format(feature, size, words_surrounding_term))
+        print("FINISH...", feature)
 
-    model = Doc2Vec.load("Testing.model")
+    print("-------------------------------------------------------")
+    model = Doc2Vec.load("./{}/size {} words {}.model".format(list_features[0], size, words_surrounding_term))
+    # Assessing the Model
+    test_data = corpus_list(clean_text(file_pd[list_features[0]]))
+    tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(test_data)]
+    
+    ranks = []
+    second_ranks = []
+    for doc_id in range(len(tagged_data)):
+        inferred_vector = model.infer_vector(tagged_data[doc_id].words)
+        sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
+        rank = [docid for docid, sim in sims].index(doc_id)
+        ranks.append(rank)
+
+        second_ranks.append(sims[1])
+        
+    import collections
+
+    counter = collections.Counter(ranks)
+    print(counter)
+    
+    print('Document ({}): «{}»\n'.format(doc_id, ' '.join(test_data[doc_id].words)))
+    print(u'SIMILAR/DISSIMILAR DOCS PER MODEL %s:\n' % model)
+    for label, index in [('MOST', 0), ('SECOND-MOST', 1), ('MEDIAN', len(sims)//2), ('LEAST', len(sims) - 1)]:
+        print(u'%s %s: «%s»\n' % (label, sims[index], ' '.join(test_data[sims[index][0]].words)))
+    
     vector_A = model.infer_vector([hobit_A])
     
     vector_B = model.infer_vector([hobit_B])
@@ -78,6 +114,11 @@ if __name__ == '__main__':
 
     print("VEC_A:", vector_A,len(vector_A))
     print("VEC_B:", vector_B,len(vector_B))
+    from scipy import spatial
+
+    # cos_distance indicates how much the two texts differ from each other
+    cos_distance = spatial.distance.cosine(vector_A, vector_B)
+    print(cos_distance)
 
 
 
