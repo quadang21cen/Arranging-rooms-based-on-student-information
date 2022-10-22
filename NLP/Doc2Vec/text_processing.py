@@ -71,15 +71,26 @@ if __name__ == '__main__':
     # print("FINISH...")
 
     model = Doc2Vec.load("Testing.model")
-    vector_A = model.infer_vector([hobit_A])
+    vector_A = model.infer_vector(corpus_list(clean_text([hobit_A])))
     
-    vector_B = model.infer_vector([hobit_B])
+    vector_B = model.infer_vector(corpus_list(clean_text([hobit_B])))
+    # Assess the model
+    test_data = corpus_list(clean_text(["minh la ai"]))
+    inferred_vector = model.infer_vector(test_data)
+    sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
+    for label, index in [('MOST', 0), ('MEDIAN', len(sims) // 2), ('LEAST', len(sims) - 1)]:
+        print(u'%s %s: «%s»\n' % (label, sims[index], ' '.join(tagged_data[sims[index][0]].words)))
 
-
+    # Compare 2 unknown docs
     print("VEC_A:", vector_A,len(vector_A))
     print("VEC_B:", vector_B,len(vector_B))
 
+    from sklearn.metrics.pairwise import linear_kernel
 
+    cosine_similarity = linear_kernel(vector_A, vector_B)
+    print(cosine_similarity)
+    
+    
 
     # # Đây là nơi gensim biến đổi text thành vector
     # test_doc = word_tokenize("đá bóng".lower())
