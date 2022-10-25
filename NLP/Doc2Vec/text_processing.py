@@ -59,6 +59,10 @@ def infer_vector_worker(document,model):
 class Doc2Vec_Class:
     def __init__(self) -> None:
         self.stopwords_path = ".\\vietnamese_stopwords.txt"
+
+    def infer_vector_worker(self, document, model):
+        vector = model.infer_vector([document])
+        return vector
     def train(self,df, feature_list, vector_size = 100, window = 2, epoch = 100):
         for feature in feature_list:
             clean = clean_text(df[feature])  # chuyen hoa thanh thuong, xoa bo ky tu dac biet
