@@ -1,0 +1,7 @@
+
+Test Document 65 : đồ nướng cà phê
+SIMILAR/DISSIMILAR DOCS PER MODEL Doc2Vec<dm/m,d20,n5,w2,s0.001,t3>:
+
+MOST (136, 0.9900909066200256) : đồ chiên và đồ nhướng
+MEDIAN (89, 0.9663671851158142) : kem bánh ngọt
+LEAST (0, 0.7134625911712646) : thích ăn món mì cay

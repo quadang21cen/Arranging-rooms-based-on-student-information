@@ -1,0 +1,2 @@
+size 50 words 5.model: 0.8009736
+size 20 words 2.model: 0.823898
