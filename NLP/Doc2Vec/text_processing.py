@@ -39,7 +39,7 @@ def get_stopwords_list(stop_file_path):
 
 def corpus_list(text):
     corpus = []
-    stopwords_path = "Continuous_BOW and Doc2Vec\\vietnamese_stopwords.txt"
+    stopwords_path = "./vietnamese_stopwords.txt"
     stopwords = get_stopwords_list(stopwords_path)
     for i in range(len(text)):
         word_list = word_tokenize(text[i])
@@ -59,27 +59,187 @@ def infer_vector_worker(document,model):
 
 
 if __name__ == '__main__':
-    hobit_A =  ' Minh # la mot nguoi huong noi thich boi loi va doc sach,thich an mi cay, uong caffe'
-    hobit_B = 'minh la mot nguoi thich da bong va nghe nhac'
-    # hobit = hobit.split(",")
-    # clean = clean_text(hobit) # chuyen hoa thanh thuong, xoa bo ky tu dac biet
-    # corpus = corpus_list(clean)
-    # tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(corpus)]
-    # print(tagged_data)
-    # model = Doc2Vec(tagged_data, vector_size=20, window=2, min_count=1, epochs=100)
-    # model.save("Testing.model")
-    # print("FINISH...")
+    file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+                "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    file_pd.columns = features
+    file_pd = file_pd.drop(columns=["Timestamp", "Unnamed"], axis=1)
+    hobit_A =  'Mì cay'
+    hobit_B = 'bánh mì'
+    # hobit = [' Minh # la mot nguoi huong noi thich boi loi va doc sach,thich an mi cay, uong caffe', 'minh la mot nguoi thich da bong va nghe nhac']
+    list_features = ["Bio_personality", "food_drink", "hobby_interests"]
+    # Dimensionality of the feature vectors.
+    # Typically as Word2Vec, more dimensions = greater quality encoding, but there will be some limit beyond which you'll get diminishing returns.
+    size = 100
+    # The maximum distance between the current and predicted word within a sentence.
+    # Notice: the paragraph-vectors approach already has a whole-document window-size so
+    # the 'window' parameter just affects how many nearby words are also mixed-in (with the doc-vector) to help predict one target word
+    words_surrounding_term = 10
+    # for feature in list_features:
+    #     clean = clean_text(file_pd[feature]) # chuyen hoa thanh thuong, xoa bo ky tu dac biet
+    #     corpus = corpus_list(clean)
+    #     tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(corpus)]
+    #     print(tagged_data)
+    #     model = Doc2Vec(vector_size=size, window=words_surrounding_term, min_count=1, epochs=100)
+    #     model.build_vocab(tagged_data)
+    #     model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
+    #     model.save("./{}/size {} words {}.model".format(feature, size, words_surrounding_term))
+    #     print("FINISH...", feature)
 
-    model = Doc2Vec.load("Testing.model")
-    vector_A = model.infer_vector([hobit_A])
-    
-    vector_B = model.infer_vector([hobit_B])
-
-
+    print("-------------------------------------------------------")
+    model = Doc2Vec.load("./{}/size {} words {}.model".format(list_features[1], size, words_surrounding_term))
+    tokenized_hobit_A = sum(corpus_list(clean_text(hobit_A)), [])
+    vector_A = model.infer_vector(tokenized_hobit_A,epochs= 100)
+    tokenized_hobit_B = sum(corpus_list(clean_text(hobit_B)), [])
+    vector_B = model.infer_vector(tokenized_hobit_B,epochs= 100)
+    print(hobit_A)
+    print(hobit_B)
     print("VEC_A:", vector_A,len(vector_A))
     print("VEC_B:", vector_B,len(vector_B))
 
+    from scipy import spatial
 
+    # cos_distance indicates how much the two texts differ from each other:
+    # higher values mean more distant(i.e.different) texts
+    # Notice: All of them are expecting TaggedDocument
+    # The range is -1 to 1 but there is some rounding error, so I ended up making the values -1 if they were less that -1 ans same for 1
+    # https://stackoverflow.com/questions/53503049/measure-similarity-between-two-documents-using-doc2vec
+    cos_distance = spatial.distance.cosine(vector_A, vector_B)
+    print(cos_distance)
+    # Find similarity in Doc2Vec model
+    similar_doc = model.dv.most_similar(vector_A, topn=5)
+    print("Similar Docs to the vector:")
+    print(similar_doc)
+    # test_data = corpus_list(clean_text(file_pd[list_features[1]]))
+    # tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(test_data)]
+    # for i in range(5):
+    # print(' '.join(tagged_data[sims[index][0]].words))
+    print("-----------------------------------")
+
+    # Evaluate the Model
+    test_data = corpus_list(clean_text(file_pd[list_features[1]]))
+    tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(test_data)]
+    ranks = []
+    second_ranks = []
+    for doc_id in range(len(tagged_data)):
+        inferred_vector = model.infer_vector(tagged_data[doc_id].words)
+        sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
+        rank = [docid for docid, sim in sims].index(doc_id)
+        ranks.append(rank)
+
+        second_ranks.append(sims[1])
+    import collections
+
+    counter = collections.Counter(ranks)
+    print(counter)
+
+
+    import random
+    # Pick a random document from the test corpus and infer a vector from the model
+    doc_id = random.randint(0, len(test_data) - 1)
+    inferred_vector = model.infer_vector(test_data[doc_id])
+    sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
+
+    # Compare and print the most/median/least similar documents from the train corpus
+    print("-------------------------------------")
+    print('\nTest Document ({}): «{}»'.format(doc_id, ' '.join(test_data[doc_id])))
+    print(u'SIMILAR/DISSIMILAR DOCS PER MODEL %s:\n' % model)
+    for label, index in [('MOST', 0), ('MEDIAN', len(sims) // 2), ('LEAST', len(sims) - 1)]:
+        print(u'%s %s: «%s»\n' % (label, sims[index], ' '.join(tagged_data[sims[index][0]].words)))
+    X = []
+    start_alpha = 0.01
+    infer_epoch = 1000
+
+    for d in test_data:
+        X.append(model.infer_vector(d, alpha=start_alpha, epochs=infer_epoch))
+    k = 3
+
+    from sklearn.cluster import Birch
+    from sklearn import metrics
+
+    brc = Birch(branching_factor=50, n_clusters=k, threshold=0.1, compute_labels=True)
+    brc.fit(X)
+
+    clusters = brc.predict(X)
+    values = [' '.join(words) for words in test_data]
+    labels = brc.labels_
+
+    print("Clusters: ")
+    print(clusters)
+
+    silhouette_score = metrics.silhouette_score(X, labels, metric='euclidean')
+
+    print("Silhouette_score: ")
+    print(silhouette_score)
+    from matplotlib import pyplot as plt
+    from matplotlib import cm
+    plt.figure(num=0, figsize=(18, 11), dpi=80, facecolor='w', edgecolor='k')
+    plt.scatter([*range(len(values))], labels, c=clusters)
+    plt.savefig("./{}/size {} words {}.png".format(list_features[1], 50, 5))
+
+
+    model = Doc2Vec.load("./{}/size {} words {}.model".format(list_features[1], 20, 2))
+
+    # Pick a random document from the test corpus and infer a vector from the model
+    doc_id = random.randint(0, len(test_data) - 1)
+    inferred_vector = model.infer_vector(test_data[doc_id])
+    sims = model.dv.most_similar([inferred_vector], topn=len(model.dv))
+
+    # Compare and print the most/median/least similar documents from the train corpus
+    print("-------------------------------------")
+    print('Test Document ({}): «{}»'.format(doc_id, ' '.join(test_data[doc_id])))
+    print(u'SIMILAR/DISSIMILAR DOCS PER MODEL %s:\n' % model)
+    for label, index in [('MOST', 0), ('MEDIAN', len(sims) // 2), ('LEAST', len(sims) - 1)]:
+        print(u'%s %s: «%s»\n' % (label, sims[index], ' '.join(tagged_data[sims[index][0]].words)))
+    with open("./{}/size {} words {}.txt".format(list_features[1], 20, 2), 'w', encoding='utf-8') as f:
+        f.write('\nTest Document '+ str(doc_id)+" : "+ ' '.join(test_data[doc_id]))
+        f.write(u'\nSIMILAR/DISSIMILAR DOCS PER MODEL %s:\n' % model)
+        for label, index in [('MOST', 0), ('MEDIAN', len(sims) // 2), ('LEAST', len(sims) - 1)]:
+            f.write("\n%s"% label +" "+"("+str(sims[index][0])+", "+str(sims[index][1]) +") : "+ ' '.join(tagged_data[sims[index][0]].words))
+    X = []
+    start_alpha = 0.01
+    infer_epoch = 1000
+
+    for d in test_data:
+        X.append(model.infer_vector(d, alpha=start_alpha, epochs=infer_epoch))
+    k = 3
+
+    from sklearn.cluster import Birch
+    from sklearn import metrics
+
+    brc = Birch(branching_factor=50, n_clusters=k, threshold=0.1, compute_labels=True)
+    brc.fit(X)
+
+    clusters = brc.predict(X)
+    values = [' '.join(words) for words in test_data]
+    labels = brc.labels_
+    print(len(values))
+    print(len(labels))
+
+    print("Clusters: ")
+    print(clusters)
+
+    silhouette_score = metrics.silhouette_score(X, labels, metric='euclidean')
+    print(len(values))
+    print(len(labels))
+
+    print("Silhouette_score: ")
+    print(silhouette_score)
+    with open("./{}/size {} words {} Silhouette_score.txt".format(list_features[1], 20, 2), 'w') as f:
+        f.write("Silhouette_score: "+str(silhouette_score))
+
+    from sklearn.decomposition import PCA
+    X = model[list(model.wv.index_to_key)]
+    pca = PCA(n_components=3)
+    X_pca = pca.fit_transform(X)
+    colors = np.arange(len(X_pca[:,0]))
+    fig = plt.figure(num=1, figsize=(18, 11), dpi=80, facecolor='w', edgecolor='k')
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(X_pca[:,0],X_pca[:,1],X_pca[:,2], c= colors, cmap="Blues", s=60)
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.set_zlabel("PC3")
+    fig.savefig("./{}/size {} words {}.pdf".format(list_features[1], 20, 2))
 
     # # Đây là nơi gensim biến đổi text thành vector
     # test_doc = word_tokenize("đá bóng".lower())
