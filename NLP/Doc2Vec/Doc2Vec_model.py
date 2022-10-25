@@ -72,13 +72,25 @@ class Doc2Vec_Class:
             print("FINISH...", feature)
     def load_to_matrix(self, model):
         model = Doc2Vec.load(model)
-        vectors_model = model.dv
-        vectors = [vectors_model[i] for i in range(len(vectors_model))]
+        vectors = model.dv.vectors
         return vectors
     def compare(self, mat1, mat2):
         from sklearn.metrics.pairwise import cosine_similarity
         return (cosine_similarity(mat1, mat2) * 100)
-
+    def cluster_TSNE(self,model):
+        from sklearn.manifold import TSNE
+        import matplotlib.pyplot as plt
+        model = Doc2Vec.load(model)
+        # doc_tags = model.dv.doctags.keys() # Gensim older version
+        doc_tags = model.dv.index_to_key
+        print(doc_tags)
+        X = model.dv[doc_tags]
+        tSNE = TSNE(n_components=2)
+        X_tsne = tSNE.fit_transform(X)
+        df = pd.DataFrame(X_tsne, index=doc_tags, columns=['x', 'y'])
+        plt.figure(0)
+        plt.scatter(df['x'], df['y'], s=0.4, alpha=0.4)
+        plt.savefig("{}_size_{}_word_{}_TSNE.png".format("Bio_personality", 50, 2))
 if __name__ == '__main__':
     file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
     features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
@@ -89,6 +101,7 @@ if __name__ == '__main__':
     doc2vec.train(file_pd, feature_list=list_features, vector_size=50, window=2, epoch=100)
     vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 50, 2))
     print(vectors)
+    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 50, 2))
     # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
     # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
     #             "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
