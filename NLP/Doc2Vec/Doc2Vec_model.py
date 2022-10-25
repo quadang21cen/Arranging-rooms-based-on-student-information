@@ -8,10 +8,10 @@ from sklearn.decomposition import PCA
 
 from matplotlib import pyplot as plt
 from nltk.corpus import stopwords
-
 import numpy as np
 
 import warnings
+import time
 warnings.filterwarnings('ignore')
 
 def clean_text(corpus):
@@ -83,28 +83,65 @@ class Doc2Vec_Class:
         model = Doc2Vec.load(model)
         # doc_tags = model.dv.doctags.keys() # Gensim older version
         doc_tags = model.dv.index_to_key
-        print(doc_tags)
+
+        #print(doc_tags)
         X = model.dv[doc_tags]
         tSNE = TSNE(n_components=2)
         X_tsne = tSNE.fit_transform(X)
         df = pd.DataFrame(X_tsne, index=doc_tags, columns=['x', 'y'])
         plt.figure(0)
         plt.scatter(df['x'], df['y'], s=0.4, alpha=0.4)
-        plt.savefig("{}_size_{}_word_{}_TSNE.png".format("Bio_personality", 50, 2))
+        plt.savefig("{}_size_{}_word_{}_TSNE.png".format("Bio_personality", 100, 5))
+    def birch_score(self, model):
+        from sklearn.cluster import Birch
+        from sklearn import metrics
+        model = Doc2Vec.load(model)
+        doc_tags = model.dv.index_to_key
+        X = model.dv[doc_tags]
+        k = 3
+        brc = Birch(branching_factor=50, n_clusters=k, threshold=0.1, compute_labels=True)
+        brc.fit(X)
+
+        clusters = brc.predict(X)
+        labels = brc.labels_
+
+        print("Clusters: ")
+        print(clusters)
+
+        silhouette_score = metrics.silhouette_score(X, labels, metric='euclidean')
+
+        print("Silhouette_score: ")
+        print(silhouette_score)
+        with open("./{}/size {} words {} Silhouette_score.txt".format("Bio_personality", 100, 5), 'w') as f:
+            f.write("Silhouette_score: "+str(silhouette_score))
 if __name__ == '__main__':
     file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    print(file_pd.columns)
+    #file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
+    #   'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
     features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
                              "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+    #                          "smoking", "refer_roommate", "Cleanliess", "Privacy"]
     file_pd.columns = features
     doc2vec = Doc2Vec_Class()
     list_features = ["Bio_personality", "food_drink", "hobby_interests"]
-    doc2vec.train(file_pd, feature_list=list_features, vector_size=50, window=2, epoch=100)
-    vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 50, 2))
+    doc2vec.train(file_pd, feature_list=list_features, vector_size=20, window=2, epoch=100)
+    start_time = time.time()
+    vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 100, 5))
+    # Values often range between -1 and 1
+    print("--- %s seconds ---" % (time.time() - start_time))
     print(vectors)
-    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 50, 2))
+    start_time = time.time()
+    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 2))
+    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 100, 5))
+    print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 100, 5))
+    print("--- %s seconds ---" % (time.time() - start_time))
     # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
     # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-    #             "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    #            "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
     # file_pd.columns = features
     # file_pd = file_pd.drop(columns=["Timestamp", "Unnamed"], axis=1)
     # hobit_A =  'Mì cay'
