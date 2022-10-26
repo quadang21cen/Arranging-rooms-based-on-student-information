@@ -79,7 +79,7 @@ class Doc2Vec_Class:
         return (cosine_similarity(mat1, mat2) * 100)
 
     def compare_two_unknown_docs(self, model, doc1, doc2):
-        return model.similarity_unseen_docs(sum(corpus_list(clean_text([doc1])),[]), sum(corpus_list(clean_text([doc2])),[]))
+        return model.dv.similarity_unseen_docs(sum(corpus_list(clean_text([doc1])),[]), sum(corpus_list(clean_text([doc2])),[]))
 
     def cluster_TSNE(self,model):
         from sklearn.manifold import TSNE
@@ -133,30 +133,30 @@ class Doc2Vec_Class:
         return similar_text
 
 if __name__ == '__main__':
-    # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
-    # print(file_pd.columns)
-    # file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
-    #    'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
-    # #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-    # #                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
-    # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-    #                           "smoking", "refer_roommate", "Cleanliess", "Privacy"]
-    # file_pd.columns = features
+    file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    print(file_pd.columns)
+    file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
+       'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
+    #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+    #                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+                              "smoking", "refer_roommate", "Cleanliess", "Privacy"]
+    file_pd.columns = features
     doc2vec = Doc2Vec_Class()
-    # list_features = ["Bio_personality", "food_drink", "hobby_interests"]
-    # doc2vec.train(file_pd, feature_list=list_features, vector_size=20, window=5, epoch=100)
-    # start_time = time.time()
-    # vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
-    # # Values often range between -1 and 1
-    # print("--- %s seconds ---" % (time.time() - start_time))
-    # print(vectors)
-    # start_time = time.time()
-    # doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
-    # print("--- %s seconds ---" % (time.time() - start_time))
-    # start_time = time.time()
-    # doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
-    # print("--- %s seconds ---" % (time.time() - start_time))
-    print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "mình thích ăn uống và đọc tiểu thuyết"))
+    list_features = ["Bio_personality", "food_drink", "hobby_interests"]
+    doc2vec.train(file_pd, feature_list=list_features, vector_size=20, window=5, epoch=100)
+    start_time = time.time()
+    vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+    # Values often range between -1 and 1
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print(vectors)
+    start_time = time.time()
+    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+    print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "code chụp anhr âm nhạc"))
     # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
     # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
     #            "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
