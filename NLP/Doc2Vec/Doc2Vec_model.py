@@ -65,6 +65,9 @@ class Doc2Vec_Class:
             corpus = corpus_list(clean)
             tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(corpus)]
             print(tagged_data)
+            # Notice: maintaining a large vector size with tiny data (which allows severe model overfitting)
+            # if it's not tens-of-thousands of texts, use a smaller vector size and more epochs (but realize results may still be weak with small data sets)
+            # if each text is tiny, use more epochs (but realize results may still be a weaker than with longer texts)
             model = Doc2Vec(vector_size=vector_size, window=window, min_count=1, epochs=epoch)
             model.build_vocab(tagged_data)
             model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
@@ -79,7 +82,7 @@ class Doc2Vec_Class:
         return (cosine_similarity(mat1, mat2) * 100)
 
     def compare_two_unknown_docs(self, model, doc1, doc2):
-        return model.dv.similarity_unseen_docs(sum(corpus_list(clean_text([doc1])),[]), sum(corpus_list(clean_text([doc2])),[]))
+        return model.similarity_unseen_docs(sum(corpus_list(clean_text([doc1])),[]), sum(corpus_list(clean_text([doc2])),[]))
 
     def cluster_TSNE(self,model):
         from sklearn.manifold import TSNE
@@ -120,17 +123,26 @@ class Doc2Vec_Class:
         with open("./{}/size {} words {} Silhouette_score.txt".format("Bio_personality", 20, 5), 'w') as f:
             f.write("Silhouette_score: "+str(silhouette_score))
 
-    def find_most_similar(self, model, text):
-        vector = model.infer_vector(sum(corpus_list(clean_text([text])),[]))
+    def find_most_similar(self, model, text, epochs = 50, alpha = 0.25):
+        # try other infer_vector() parameters, such as steps=50 (or more, especially with small texts), and alpha=0.025
+
+        vector = model.infer_vector(sum(corpus_list(clean_text([text])),[]), epochs=epochs, alpha=alpha)
         similar_text = model.dv.most_similar(vector, topn=len(model.dv))
         # Print doc_tags
-        print(similar_text[:][0])
+        # print(similar_text[:][0])
+
         # Print vector similar
-        print(similar_text[:][1])
+        # print(similar_text[:][1])
+
+        # Print 5 most similar docs
+        # print(similar_text[:5])
+        #Print 5 least similar docs
+        # print(similar_text[-5:])
+
         # Print Words
-        # original_corpus = sum(corpus_list(original_df_feature)),[])
+        # original_corpus = sum(corpus_list(original_df_feature)),[]) # original_df_feature: The train dataset feature
         # print(' '.original_corpus[similar_text[index][0]].words)
-        return similar_text
+        return similar_text[:5]
 
 if __name__ == '__main__':
     file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
@@ -157,6 +169,7 @@ if __name__ == '__main__':
     doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
     print("--- %s seconds ---" % (time.time() - start_time))
     print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "code chụp anhr âm nhạc"))
+    print(doc2vec.find_most_similar(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)), text="mình thích đọc tiểu thuyết"))
     # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
     # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
     #            "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
