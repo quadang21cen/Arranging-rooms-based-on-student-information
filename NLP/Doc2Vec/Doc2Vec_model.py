@@ -7,7 +7,6 @@ import re
 from sklearn.decomposition import PCA
 
 from matplotlib import pyplot as plt
-from nltk.corpus import stopwords
 import numpy as np
 
 import warnings
@@ -37,9 +36,8 @@ def get_stopwords_list(stop_file_path):
         stop_set = set(m.strip() for m in stopwords)
         return list(frozenset(stop_set))
 
-def corpus_list(text):
+def corpus_list(text, stopwords_path):
     corpus = []
-    stopwords_path = "./vietnamese_stopwords.txt"
     stopwords = get_stopwords_list(stopwords_path)
     for i in range(len(text)):
         word_list = word_tokenize(text[i])
@@ -58,21 +56,23 @@ def infer_vector_worker(document,model):
 
 class Doc2Vec_Class:
     def __init__(self) -> None:
-        self.stopwords_path = ".\\vietnamese_stopwords.txt"
-    def train(self,df, feature_list, vector_size = 100, window = 2, epoch = 100):
+        self.stopwords_path = "NLP\\Doc2Vec\\vietnamese_stopwords.txt"
+    def train(self, df, feature_list, save_file, vector_size = 100, window = 2, epoch = 100):
+        start_time = time.time()
         for feature in feature_list:
             clean = clean_text(df[feature])  # chuyen hoa thanh thuong, xoa bo ky tu dac biet
-            corpus = corpus_list(clean)
+            corpus = corpus_list(clean, stopwords_path=self.stopwords_path)
             tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(corpus)]
-            print(tagged_data)
+            #print(tagged_data)
             # Notice: maintaining a large vector size with tiny data (which allows severe model overfitting)
             # if it's not tens-of-thousands of texts, use a smaller vector size and more epochs (but realize results may still be weak with small data sets)
             # if each text is tiny, use more epochs (but realize results may still be a weaker than with longer texts)
             model = Doc2Vec(vector_size=vector_size, window=window, min_count=1, epochs=epoch)
             model.build_vocab(tagged_data)
             model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
-            model.save("./{}/size {} words {}.model".format(feature, vector_size, window))
+            model.save(save_file)
             print("FINISH...", feature)
+            print("Finish in--- %s seconds ---" % (time.time() - start_time))
     def load_to_matrix(self, model):
         model = Doc2Vec.load(model)
         vectors = model.dv.vectors
@@ -82,9 +82,9 @@ class Doc2Vec_Class:
         return (cosine_similarity(mat1, mat2) * 100)
 
     def compare_two_unknown_docs(self, model, doc1, doc2):
-        return model.similarity_unseen_docs(sum(corpus_list(clean_text([doc1])),[]), sum(corpus_list(clean_text([doc2])),[]))
+        return model.similarity_unseen_docs(sum(corpus_list(clean_text([doc1]), stopwords_path=self.stopwords_path),[]), sum(corpus_list(clean_text([doc2]), stopwords_path=self.stopwords_path),[]))
 
-    def cluster_TSNE(self,model):
+    def cluster_TSNE(self,model, save_file):
         from sklearn.manifold import TSNE
         import matplotlib.pyplot as plt
         model = Doc2Vec.load(model)
@@ -98,9 +98,9 @@ class Doc2Vec_Class:
         df = pd.DataFrame(X_tsne, index=doc_tags, columns=['x', 'y'])
         plt.figure(0)
         plt.scatter(df['x'], df['y'], s=0.4, alpha=0.4)
-        plt.savefig("{}_size_{}_word_{}_TSNE.png".format("Bio_personality", 20, 5))
+        plt.savefig(save_file)
 
-    def birch_score(self, model):
+    def birch_score(self, model, save_file):
         from sklearn.cluster import Birch
         from sklearn import metrics
         model = Doc2Vec.load(model)
@@ -120,13 +120,13 @@ class Doc2Vec_Class:
 
         print("Silhouette_score: ")
         print(silhouette_score)
-        with open("./{}/size {} words {} Silhouette_score.txt".format("Bio_personality", 20, 5), 'w') as f:
+        with open(save_file, 'w') as f:
             f.write("Silhouette_score: "+str(silhouette_score))
 
     def find_most_similar(self, model, text, epochs = 50, alpha = 0.25):
         # try other infer_vector() parameters, such as steps=50 (or more, especially with small texts), and alpha=0.025
 
-        vector = model.infer_vector(sum(corpus_list(clean_text([text])),[]), epochs=epochs, alpha=alpha)
+        vector = model.infer_vector(sum(corpus_list(clean_text([text]), stopwords_path=self.stopwords_path),[]), epochs=epochs, alpha=alpha)
         similar_text = model.dv.most_similar(vector, topn=len(model.dv))
         # Print doc_tags
         # print(similar_text[:][0])
@@ -140,7 +140,7 @@ class Doc2Vec_Class:
         # print(similar_text[-5:])
 
         # Print Words
-        # original_corpus = sum(corpus_list(original_df_feature)),[]) # original_df_feature: The train dataset feature
+        # original_corpus = sum(corpus_list(original_df_feature, stopwords_path=self.stopwords_path)),[]) # original_df_feature: The train dataset feature
         # print(' '.original_corpus[similar_text[index][0]].words)
         return similar_text[:5]
 
@@ -156,20 +156,24 @@ if __name__ == '__main__':
     file_pd.columns = features
     doc2vec = Doc2Vec_Class()
     list_features = ["Bio_personality", "food_drink", "hobby_interests"]
-    doc2vec.train(file_pd, feature_list=list_features, vector_size=20, window=5, epoch=100)
+    doc2vec.train(file_pd, feature_list=list_features, save_file = "result.model", vector_size=20, window=5, epoch=100)
     start_time = time.time()
     vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
     # Values often range between -1 and 1
     print("--- %s seconds ---" % (time.time() - start_time))
     print(vectors)
     start_time = time.time()
-    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5),save_file="1.png")
     print("--- %s seconds ---" % (time.time() - start_time))
     start_time = time.time()
-    doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+    doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5), save_file="1.txt")
     print("--- %s seconds ---" % (time.time() - start_time))
     print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "code chụp anhr âm nhạc"))
     print(doc2vec.find_most_similar(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)), text="mình thích đọc tiểu thuyết"))
+
+
+
+
     # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
     # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
     #            "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
