@@ -36,9 +36,8 @@ class RS:
 
     def compute_all_corr(self):
         # self.data["Cleanliess"]
-        SIM_cp = self.cosine_sim(self.data[["Cleanliess","Privacy"]].to_numpy())
-        cosine_similarity_pd = pd.DataFrame(SIM_cp, columns = [*range(len(self.data[["Cleanliess","Privacy"]))])
-        print(SIM_cp[0][0])
+        SIM_cp = self.data[["Cleanliess","Privacy"]]
+        print(self.corr_euclidean(SIM_cp))
         # vec_food_drink = self.TF_IDF.text2vec(self.data["food_drink"])
         # return vec_food_drink
         #sim_food_drink =  self.corr_euclidean(vec_food_drink)
