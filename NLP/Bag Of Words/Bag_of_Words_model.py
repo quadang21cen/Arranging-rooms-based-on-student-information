@@ -32,7 +32,8 @@ class Bag_Of_Word:
         return vect,tfidf
     def text2vec(self, text_list):
         vect, BOW = self.transform_vector(text_list)
-        return BOW.toarray()
+        arrays = [value for value in BOW.toarray()]
+        return arrays
 if __name__ == '__main__':
     corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
               "Toi thich da bong",
