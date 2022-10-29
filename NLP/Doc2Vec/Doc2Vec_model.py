@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from underthesea import text_normalize, word_tokenize
 from gensim.models import fasttext, word2vec
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -440,7 +439,6 @@ if __name__ == '__main__':
 
     # cos_distance1 = spatial.distance.cosine(np.array(embs[ixd_vec3]).mean(axis=0), np.array(embs[ixd_vec4]).mean(axis=0))
     # print(cos_distance1)
-=======
 from underthesea import text_normalize, word_tokenize
 from gensim.models import fasttext, word2vec
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -879,4 +877,3 @@ if __name__ == '__main__':
 
     # cos_distance1 = spatial.distance.cosine(np.array(embs[ixd_vec3]).mean(axis=0), np.array(embs[ixd_vec4]).mean(axis=0))
     # print(cos_distance1)
->>>>>>> d22b6a67ce246ff354e79f6da9fc9989525dcde6
