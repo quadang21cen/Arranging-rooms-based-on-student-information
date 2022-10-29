@@ -3,7 +3,7 @@ from gensim.models import fasttext, word2vec
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 import pandas as pd
 import re
-
+from pathlib import Path
 from sklearn.decomposition import PCA
 
 from matplotlib import pyplot as plt
@@ -57,7 +57,8 @@ def infer_vector_worker(document,model):
 class Doc2Vec_Class:
     def __init__(self) -> None:
         self.stopwords_path = "NLP\\Doc2Vec\\vietnamese_stopwords.txt"
-    def train(self, df, feature_list, save_file, vector_size = 100, window = 2, epoch = 100):
+        self.model = None
+    def train(self, df, feature_list, save_folder, vector_size = 100, window = 2, epoch = 100):
         start_time = time.time()
         for feature in feature_list:
             clean = clean_text(df[feature])  # chuyen hoa thanh thuong, xoa bo ky tu dac biet
@@ -70,19 +71,22 @@ class Doc2Vec_Class:
             model = Doc2Vec(vector_size=vector_size, window=window, min_count=1, epochs=epoch)
             model.build_vocab(tagged_data)
             model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
-            model.save(save_file)
+            Path(save_folder+"/"+str(feature)).mkdir(parents=True, exist_ok=True)
+            model.save(save_folder+"/"+str(feature) + ".model")
             print("FINISH...", feature)
             print("Finish in--- %s seconds ---" % (time.time() - start_time))
     def load_to_matrix(self, model):
-        model = Doc2Vec.load(model)
-        vectors = model.dv.vectors
+        self.model = Doc2Vec.load(model)
+        vectors = self.model.dv.vectors
         return vectors
     def compare_using_cosine_sklearn(self, mat1, mat2):
         from sklearn.metrics.pairwise import cosine_similarity
         return (cosine_similarity(mat1, mat2) * 100)
 
-    def compare_two_unknown_docs(self, model, doc1, doc2):
-        return model.similarity_unseen_docs(sum(corpus_list(clean_text([doc1]), stopwords_path=self.stopwords_path),[]), sum(corpus_list(clean_text([doc2]), stopwords_path=self.stopwords_path),[]))
+    def compare_two_unknown_docs(self, save_file, text1, text2):
+        self.model = Doc2Vec.load(save_file)
+        return self.model.similarity_unseen_docs(sum(corpus_list(clean_text([text1]), stopwords_path=self.stopwords_path), []),
+                                                 sum(corpus_list(clean_text([text2]), stopwords_path=self.stopwords_path), []))
 
     def cluster_TSNE(self,model, save_file):
         from sklearn.manifold import TSNE
