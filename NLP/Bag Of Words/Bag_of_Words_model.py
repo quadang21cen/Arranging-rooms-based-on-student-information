@@ -6,7 +6,11 @@ import re
 
 class Bag_Of_Word:
     def __init__(self) -> None:
+<<<<<<< HEAD
         self.stopwords_path = "NLP\\Bag Of Words\\vietnamese_stopwords.txt"
+=======
+        self.stopwords_path = "vietnamese_stopwords.txt"
+>>>>>>> 022a1314baa1846d8975896f0a6d4a13db48a56b
 
     def get_stopwords_list(self, stop_file_path):
         """load stop words """
@@ -24,6 +28,7 @@ class Bag_Of_Word:
         punctuation = string.punctuation
         clean_words = [w for w in doc if w not in punctuation]
         return clean_words
+
     def transform_vector(self, text_list):
         # Create TfidfVectorizer for Vietnamese
         stop_words_list = self.get_stopwords_list(self.stopwords_path)
@@ -33,14 +38,23 @@ class Bag_Of_Word:
 
     def text2vec(self, text_list):
         vect, BOW = self.transform_vector(text_list)
+<<<<<<< HEAD
         arrays = [value for value in BOW.toarray()]
         return vect.get_feature_names_out(), arrays
     
+=======
+        return BOW.toarray()
+
+    def distance(self, matrix):
+        return cosine_similarity(matrix, matrix)
+
+>>>>>>> 022a1314baa1846d8975896f0a6d4a13db48a56b
 if __name__ == '__main__':
     corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
               "Toi thich da bong",
               "Toi thich boi loi",
               "Ban dang boi loi, nghe nhac",
+<<<<<<< HEAD
               "Tao thich nhay mua"]
     # stop_words_list = get_stopwords_list(".\\vietnamese_stopwords.txt")
     # vect = CountVectorizer(tokenizer=tokenize_vn, stop_words=stop_words_list, lowercase=True)
@@ -50,9 +64,22 @@ if __name__ == '__main__':
     print(bow.text2vec(corpus))
 
     # vect, matrix = bow.transform_vector(corpus)
+=======
+              "Tao thich nhay mua"
+              ]
+    import pandas as pd
+    file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    print(file_pd.columns)
+    features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+                                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    file_pd.columns = features
+    bow = Bag_Of_Word()
+    matrix = bow.text2vec(file_pd["hobby_interests"])
+>>>>>>> 022a1314baa1846d8975896f0a6d4a13db48a56b
 
     # import pandas as pd
 
+<<<<<<< HEAD
     # feature_df = pd.DataFrame(bow.text2vec(corpus),
     #                           columns=vect.get_feature_names_out())
 
@@ -74,3 +101,15 @@ if __name__ == '__main__':
 
     # cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns = [*range(len(matrix.toarray()))])
     # print(cosine_similarity_pd)
+=======
+
+    print("Cosine similarity")
+    from sklearn.metrics.pairwise import cosine_similarity
+
+    cosine_similarity = cosine_similarity(matrix, matrix)
+
+    cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns = [*range(len(matrix.toarray()))])
+    print(cosine_similarity_pd)
+
+    print(bow.distance(matrix))
+>>>>>>> 022a1314baa1846d8975896f0a6d4a13db48a56b
