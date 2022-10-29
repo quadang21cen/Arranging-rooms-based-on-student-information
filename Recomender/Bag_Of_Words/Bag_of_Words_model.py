@@ -50,29 +50,3 @@ if __name__ == '__main__':
     bow = Bag_Of_Word()
     bow.text2vec(corpus)
     print(bow.text2vec(corpus))
-
-    # vect, matrix = bow.transform_vector(corpus)
-
-    # import pandas as pd
-
-    # feature_df = pd.DataFrame(bow.text2vec(corpus),
-    #                           columns=vect.get_feature_names_out())
-
-    # from scipy import spatial
-    # print(matrix.toarray()[0],len(matrix.toarray()[0]))
-    # print(matrix.toarray()[1],len(matrix.toarray()[1]))
-    # # print("(0,0):",spatial.distance.cosine(BOW.toarray()[0], BOW.toarray()[0]))
-    # # print("(0,1):",spatial.distance.cosine(BOW.toarray()[0], BOW.toarray()[1]))
-    # # print("(0,2):",spatial.distance.cosine(BOW.toarray()[0], BOW.toarray()[2]))
-    # # print("(1,0):",spatial.distance.cosine(BOW.toarray()[1], BOW.toarray()[0]))
-    # # print("(1,1):",spatial.distance.cosine(BOW.toarray()[1], BOW.toarray()[1]))
-    # # print("(1,2):",spatial.distance.cosine(BOW.toarray()[1], BOW.toarray()[2]))
-    # # print("(2,2):",spatial.distance.cosine(BOW.toarray()[2], BOW.toarray()[2]))
-
-    # print("Cosine similarity")
-    # from sklearn.metrics.pairwise import linear_kernel
-
-    # cosine_similarity = linear_kernel(matrix, matrix)
-
-    # cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns = [*range(len(matrix.toarray()))])
-    # print(cosine_similarity_pd)

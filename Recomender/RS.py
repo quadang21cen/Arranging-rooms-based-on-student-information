@@ -54,6 +54,8 @@ class RS:
 if __name__ == "__main__":
     RS = RS()
     res = RS.compute_all_corr()
+    df_corr = RS.SIM_matrix = pd.DataFrame(data =res ,index=RS.all_user,columns=RS.all_user)
+    df_corr.to_csv("demo_rs.csv")
     print(res)
     print("FINISH")
 
