@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 from underthesea import text_normalize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import string
@@ -67,7 +67,7 @@ pairwise_similarity = tfidf * tfidf.T
 
 print("Do tuong dong:",pairwise_similarity)
 
-=======
+
 from underthesea import text_normalize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import string
@@ -103,16 +103,16 @@ class TF_IDF_class:
         arrays = [value for value in tfidf.toarray()]
         return arrays
 
-<<<<<<< HEAD:NLP/TF_IDF/TF_IDF.py
+
 def test():
     print("AAA")
-=======
+
 import pandas as pd
 df = pd.read_csv('Student_Ins.csv')
 features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
                              "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
 df.columns = features
->>>>>>> 5a5ad190cc8c5a2ebe29160436d6533a509b1d91:NLP/TF_IDF/TF_IDF_model.py
+
 
 corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
             "Toi thich da bong"
@@ -142,4 +142,4 @@ pairwise_similarity = tfidf * tfidf.T
 
 print("Do tuong dong:",pairwise_similarity)
 
->>>>>>> d22b6a67ce246ff354e79f6da9fc9989525dcde6
+
