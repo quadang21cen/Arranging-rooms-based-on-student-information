@@ -32,6 +32,8 @@ class TF_IDF:
         vect, tfidf = self.transform_vector(text_list)
         return tfidf.toarray()
 
+def test():
+    print("AAA")
 
 corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
             "Toi thich da bong"
