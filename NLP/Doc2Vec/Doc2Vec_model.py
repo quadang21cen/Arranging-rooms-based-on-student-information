@@ -54,10 +54,16 @@ def infer_vector_worker(document,model):
     vector = model.infer_vector([document])
     return vector
 
+
+
 class Doc2Vec_Class:
     def __init__(self) -> None:
         self.stopwords_path = "NLP\\Doc2Vec\\vietnamese_stopwords.txt"
         self.model = None
+
+    def __init__(self,path):
+        self.model = Doc2Vec.load(path)
+
     def train(self, df, feature_list, save_folder, vector_size = 100, window = 2, epoch = 100):
         start_time = time.time()
         for feature in feature_list:
@@ -75,10 +81,11 @@ class Doc2Vec_Class:
             model.save(save_folder+"/"+str(feature) + ".model")
             print("FINISH...", feature)
             print("Finish in--- %s seconds ---" % (time.time() - start_time))
-    def load_to_matrix(self, model):
-        self.model = Doc2Vec.load(model)
+
+    def load_to_matrix(self):
         vectors = self.model.dv.vectors
         return vectors
+
     def compare_using_cosine_sklearn(self, mat1, mat2):
         from sklearn.metrics.pairwise import cosine_similarity
         return (cosine_similarity(mat1, mat2) * 100)
@@ -87,6 +94,8 @@ class Doc2Vec_Class:
         self.model = Doc2Vec.load(save_file)
         return self.model.similarity_unseen_docs(sum(corpus_list(clean_text([text1]), stopwords_path=self.stopwords_path), []),
                                                  sum(corpus_list(clean_text([text2]), stopwords_path=self.stopwords_path), []))
+
+
 
     def cluster_TSNE(self,model, save_file):
         from sklearn.manifold import TSNE
@@ -127,11 +136,11 @@ class Doc2Vec_Class:
         with open(save_file, 'w') as f:
             f.write("Silhouette_score: "+str(silhouette_score))
 
-    def find_most_similar(self, model, text, epochs = 50, alpha = 0.25):
+    def find_most_similar(self, text, epochs = 50, alpha = 0.25):
         # try other infer_vector() parameters, such as steps=50 (or more, especially with small texts), and alpha=0.025
 
-        vector = model.infer_vector(sum(corpus_list(clean_text([text]), stopwords_path=self.stopwords_path),[]), epochs=epochs, alpha=alpha)
-        similar_text = model.dv.most_similar(vector, topn=len(model.dv))
+        vector = self.model.infer_vector(sum(corpus_list(clean_text([text]), stopwords_path=self.stopwords_path),[]), epochs=epochs, alpha=alpha)
+        similar_text = self.model.dv.most_similar(vector, topn=len(self.model.dv))
         # Print doc_tags
         # print(similar_text[:][0])
 
@@ -149,31 +158,40 @@ class Doc2Vec_Class:
         return similar_text[:5]
 
 if __name__ == '__main__':
-    file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
-    print(file_pd.columns)
-    file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
-       'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
-    #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-    #                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
-    features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-                              "smoking", "refer_roommate", "Cleanliess", "Privacy"]
-    file_pd.columns = features
-    doc2vec = Doc2Vec_Class()
-    list_features = ["Bio_personality", "food_drink", "hobby_interests"]
-    doc2vec.train(file_pd, feature_list=list_features, save_file = "result.model", vector_size=20, window=5, epoch=100)
-    start_time = time.time()
-    vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
-    # Values often range between -1 and 1
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print(vectors)
-    start_time = time.time()
-    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5),save_file="1.png")
-    print("--- %s seconds ---" % (time.time() - start_time))
-    start_time = time.time()
-    doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5), save_file="1.txt")
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "code chụp anhr âm nhạc"))
-    print(doc2vec.find_most_similar(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)), text="mình thích đọc tiểu thuyết"))
+    corpus_A = "tôi thích ăn mì cay và uống cà phê" 
+    corpus_B = "TETETETE"
+    D2V = Doc2Vec_Class("NLP\\Doc2Vec\\food_drink\\size 50 words 5.model")
+    # print(D2V.load_to_matrix())
+    print(D2V.find_most_similar(corpus_A))
+    print("FINISH...")
+
+
+
+    # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    # print(file_pd.columns)
+    # file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
+    #    'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
+    # #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+    # #                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+    #                           "smoking", "refer_roommate", "Cleanliess", "Privacy"]
+    # file_pd.columns = features
+    # doc2vec = Doc2Vec_Class()
+    # list_features = ["Bio_personality", "food_drink", "hobby_interests"]
+    # doc2vec.train(file_pd, feature_list=list_features, save_file = "result.model", vector_size=20, window=5, epoch=100)
+    # start_time = time.time()
+    # vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+    # # Values often range between -1 and 1
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print(vectors)
+    # start_time = time.time()
+    # doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5),save_file="1.png")
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # start_time = time.time()
+    # doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5), save_file="1.txt")
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "code chụp anhr âm nhạc"))
+    # print(doc2vec.find_most_similar(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)), text="mình thích đọc tiểu thuyết"))
 
 
 

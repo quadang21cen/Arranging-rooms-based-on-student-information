@@ -5,8 +5,9 @@ from pip import main
 from scipy.spatial.distance import cosine
 import numpy as np
 from numpy.linalg import norm
-
+from sklearn.metrics.pairwise import linear_kernel
 from TF_IDF.TF_IDF import TF_IDF
+
 
 class RS:
 
@@ -30,15 +31,16 @@ class RS:
                 SIM_matrix.iloc[i][j] = np.linalg.norm(util_matrix.iloc[i,1:].to_numpy() - util_matrix.iloc[j,1:].to_numpy())
         return SIM_matrix
 
-    def cosine_sim(self,A , B):
-        return np.dot(A,B)/(norm(A, axis=1)*norm(B))
-
-    def corr_matrix(self,col):
-        return self.corr_cosine(self.data[col])
+    def cosine_sim(self,vec):
+        return linear_kernel(vec, vec)
 
     def compute_all_corr(self):
-        vec_food_drink = self.TF_IDF.text2vec(self.data["food_drink"])
-        return vec_food_drink
+        # self.data["Cleanliess"]
+        SIM_cp = self.cosine_sim(self.data[["Cleanliess","Privacy"]].to_numpy())
+        cosine_similarity_pd = pd.DataFrame(SIM_cp, columns = [*range(len(self.data[["Cleanliess","Privacy"]))])
+        print(SIM_cp[0][0])
+        # vec_food_drink = self.TF_IDF.text2vec(self.data["food_drink"])
+        # return vec_food_drink
         #sim_food_drink =  self.corr_euclidean(vec_food_drink)
         # return self.cosine_sim(vec,vec)
         
@@ -46,6 +48,25 @@ class RS:
 
 if __name__ == "__main__":
     RS = RS()
-    res = RS.compute_all_corr()
-    print(res[0])
-    print("FINISH...")
+    RS.compute_all_corr()
+    # res = RS.compute_all_corr()
+    # print(res[0])
+    # print("FINISH...")
+
+
+
+
+    # from sklearn.metrics.pairwise import linear_kernel
+    # a = [[1,2,3]]
+    # b = [[2,4,5]]
+    # cosine_similarity = linear_kernel(a, b)
+    # print(cosine_similarity)
+
+    # a = [[1,2,3],[2,4,5]]
+    # cosine_similarity = linear_kernel(a, a)
+    # print(cosine_similarity)
+    # cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns = [*range(len(a))])
+    # print(cosine_similarity_pd)
+
+
+    
