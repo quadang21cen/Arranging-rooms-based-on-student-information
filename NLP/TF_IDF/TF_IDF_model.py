@@ -51,6 +51,8 @@ df.columns = features
 corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
             "Toi thich da bong"
            ]
+import random
+df["labels"] = [random.randint(0, 5) for _ in range(len(df['Bio_personality']))]
 
 
 #label_id_df = df['labels'].drop_duplicates()
@@ -83,8 +85,6 @@ cosine_similarity_pd = pd.DataFrame(tf_idf.pairwise(matrix), columns = [*range(l
 print(cosine_similarity_pd)
 
 # Đánh giá độ chính xác bằng text classification
-import random
-df["labels"] = [random.randint(0, 5) for _ in range(len(df['Bio_personality']))]
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
