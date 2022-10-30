@@ -40,6 +40,7 @@ class BM25_class:
         return vect
 
 if __name__ == '__main__':
+    # Giống như doc2vec (search google gợi ý câu gần nhất)
     corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
               "Toi thich da bong",
               "Toi thich boi loi",
