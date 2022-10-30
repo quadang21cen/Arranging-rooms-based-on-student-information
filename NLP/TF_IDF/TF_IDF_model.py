@@ -7,6 +7,7 @@ from sklearn.metrics import pairwise_distances
 import numpy as np
 from sklearn.model_selection import train_test_split
 import seaborn as sns
+import re
 class TF_IDF_class:
     def __init__(self) -> None:
         self.stopwords_path = "vietnamese_stopwords.txt"
@@ -21,6 +22,16 @@ class TF_IDF_class:
 
     def tokenize_vn(self, doc):
         # Tokenize the words
+        emoji_pattern = re.compile("["
+                                   u"\U0001F600-\U0001F64F"  # emoticons
+                                   u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                                   u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                                   u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                                   u"\U00002702-\U000027B0"
+                                   u"\U000024C2-\U0001F251"
+                                   "]+", flags=re.UNICODE)
+        doc = emoji_pattern.sub(r'', doc)
+        # Tokenize the words
         normalized_doc = text_normalize(doc)
         doc = word_tokenize(normalized_doc)
         # Remove Punctuation (VD: Xoa dau !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ )
@@ -28,10 +39,19 @@ class TF_IDF_class:
         clean_words = [w for w in doc if w not in punctuation]
         clean_words = [w for w in clean_words if (" " in w) or w.isalpha()]
         return clean_words
+
+    def jacc_similarity(self, vector1, vector2):
+        jacc_num = 0
+        jacc_den = 0
+        for index, value in enumerate(vector1):
+            if float(vector1[index]) != 0 or float(vector2[index]) != 0:
+                jacc_den += max(vector1[index], vector2[index])
+                jacc_num += min(vector1[index], vector2[index])
+        return jacc_num / jacc_den
     def transform_vector(self, text_list):
         # Create TfidfVectorizer for Vietnamese
         stop_words_list = self.get_stopwords_list(self.stopwords_path)
-        vect = TfidfVectorizer(tokenizer=self.tokenize_vn, stop_words=stop_words_list, lowercase=True, ngram_range=(1,3), max_features=3000,sublinear_tf=True)
+        vect = TfidfVectorizer(tokenizer=self.tokenize_vn, stop_words=stop_words_list, lowercase=True, ngram_range=(1,5))
         tfidf = vect.fit_transform(text_list)
         return vect,tfidf
     def text2vec(self, text_list):
@@ -43,6 +63,8 @@ class TF_IDF_class:
 
     def pairwise_cosine(self, matrix):
         return cosine_similarity(matrix, matrix)
+    def pairwise_jac(self, matrix):
+        return [[self.jacc_similarity(vec1, vec2) for vec2 in matrix] for vec1 in matrix]
     def compare_vectors(self, vec1, vec2):
         return cosine_similarity([vec1], [vec2])
 
@@ -85,12 +107,15 @@ feature_df.to_csv("test.csv")
 
 matrix = tf_idf.text2vec(df['Bio_personality'])
 
-jac_dissimilarity = tf_idf.pairwise(matrix, metric='jaccard')
-print(jac_dissimilarity)
 # Sự không tương đồng giữa các văn bản
 print("jaccard dissimilarity")
+jac_dissimilarity = tf_idf.pairwise(matrix, metric='jaccard')
+print(jac_dissimilarity)
 jac_dissimilarity_pd = pd.DataFrame(jac_dissimilarity, columns = [*range(len(matrix))])
 print(jac_dissimilarity_pd)
+#print("jaccard similarity")
+#jac_similarity_pd = pd.DataFrame(tf_idf.pairwise_jac(matrix), columns = [*range(len(matrix))])
+#print(jac_similarity_pd)
 
 # Sự tương đồng giữa các văn bản
 print("Cosine similarity")
