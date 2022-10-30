@@ -59,6 +59,9 @@ if __name__ == '__main__':
                 "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
     file_pd.columns = features
 
+    import random
+
+    file_pd["labels"] = [random.randint(0, 5) for _ in range(len(file_pd['hobby_interests']))]
 
     bow = Bag_Of_Word()
     matrix = bow.text2vec(file_pd["hobby_interests"])
@@ -76,10 +79,6 @@ if __name__ == '__main__':
     print(cosine_similarity_pd)
 
     # Đánh giá độ chính xác bằng text classification
-
-    import random
-
-    file_pd["labels"] = [random.randint(0, 5) for _ in range(len(file_pd['hobby_interests']))]
 
     from matplotlib import pyplot as plt
     def plot():
