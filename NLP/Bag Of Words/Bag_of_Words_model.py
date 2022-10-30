@@ -3,9 +3,13 @@ from sklearn.feature_extraction.text import CountVectorizer
 import string
 import re
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import pairwise_distances
+
 import numpy as np
 from sklearn.model_selection import train_test_split
 import seaborn as sns
+
+
 class Bag_Of_Word:
     def __init__(self) -> None:
         self.stopwords_path = "vietnamese_stopwords.txt"
@@ -39,7 +43,11 @@ class Bag_Of_Word:
         vect, BOW = self.transform_vector(text_list)
         return BOW.toarray()
 
-    def pairwise(self, matrix):
+    def pairwise(self, matrix, metric='cosine'):
+        # Tính độ không tương quan cosine, jaccard
+        return pairwise_distances(matrix, matrix, metric = metric)
+
+    def pairwise_cosine(self, matrix):
         return cosine_similarity(matrix, matrix)
 
     def compare_vectors(self, vec1, vec2):
@@ -71,12 +79,20 @@ if __name__ == '__main__':
     print(cosine)
     import pandas as pd
 
-    print("Cosine similarity")
 
-    cosine_similarity = bow.pairwise(matrix)
-    print(cosine_similarity)
-    cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns = [*range(len(matrix))])
+    jac_dissimilarity = bow.pairwise(matrix, metric='jaccard')
+    print(jac_dissimilarity)
+    # Sự không tương đồng giữa các văn bản
+    print("jaccard dissimilarity")
+    jac_dissimilarity_pd = pd.DataFrame(jac_dissimilarity, columns = [*range(len(matrix))])
+    print(jac_dissimilarity_pd)
+
+    # Sự tương đồng giữa các văn bản
+    print("Cosine similarity")
+    cosine_similarity = bow.pairwise_cosine(matrix)
+    cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns=[*range(len(matrix))])
     print(cosine_similarity_pd)
+
 
     # Đánh giá độ chính xác bằng text classification
 
