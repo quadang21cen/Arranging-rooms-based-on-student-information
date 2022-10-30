@@ -2,11 +2,11 @@ from underthesea import text_normalize, word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 import string
 import re
-
+from sklearn.metrics.pairwise import cosine_similarity
 
 class Bag_Of_Word:
     def __init__(self) -> None:
-        self.stopwords_path = "NLP\\Bag Of Words\\vietnamese_stopwords.txt"
+        self.stopwords_path = "NLP\\Bag_Of_Words\\vietnamese_stopwords.txt"
 
     def get_stopwords_list(self, stop_file_path):
         """load stop words """
@@ -34,44 +34,41 @@ class Bag_Of_Word:
 
     def text2vec(self, text_list):
         vect, BOW = self.transform_vector(text_list)
-        arrays = [value for value in BOW.toarray()]
-        return vect.get_feature_names_out(), arrays
-    
+        return BOW.toarray()
+
+    def pairwise(self, matrix):
+        return cosine_similarity(matrix, matrix)
+
+    def compare_vectors(self, vec1, vec2):
+        return cosine_similarity([vec1], [vec2])
+
 if __name__ == '__main__':
     corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
               "Toi thich da bong",
               "Toi thich boi loi",
               "Ban dang boi loi, nghe nhac",
-              "Tao thich nhay mua"]
-    # stop_words_list = get_stopwords_list(".\\vietnamese_stopwords.txt")
-    # vect = CountVectorizer(tokenizer=tokenize_vn, stop_words=stop_words_list, lowercase=True)
-    # BOW = vect.fit_transform(corpus)
+              "Tao thich nhay mua"
+              ]
+    import pandas as pd
+    file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    #print(file_pd.columns)
+    features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+                                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    file_pd.columns = features
     bow = Bag_Of_Word()
-    librarey, bow.text2vec(corpus)
-    print(bow.text2vec(corpus))
+    matrix = bow.text2vec(file_pd["hobby_interests"])
 
-    # vect, matrix = bow.transform_vector(corpus)
+    # so sánh 2 vector
+    cosine = bow.compare_vectors(matrix[0], matrix[1])
+    print(cosine)
+    import pandas as pd
 
-    # import pandas as pd
 
-    # feature_df = pd.DataFrame(bow.text2vec(corpus),
-    #                           columns=vect.get_feature_names_out())
+    print("Cosine similarity")
 
-    # from scipy import spatial
-    # print(matrix.toarray()[0],len(matrix.toarray()[0]))
-    # print(matrix.toarray()[1],len(matrix.toarray()[1]))
-    # # print("(0,0):",spatial.distance.cosine(BOW.toarray()[0], BOW.toarray()[0]))
-    # # print("(0,1):",spatial.distance.cosine(BOW.toarray()[0], BOW.toarray()[1]))
-    # # print("(0,2):",spatial.distance.cosine(BOW.toarray()[0], BOW.toarray()[2]))
-    # # print("(1,0):",spatial.distance.cosine(BOW.toarray()[1], BOW.toarray()[0]))
-    # # print("(1,1):",spatial.distance.cosine(BOW.toarray()[1], BOW.toarray()[1]))
-    # # print("(1,2):",spatial.distance.cosine(BOW.toarray()[1], BOW.toarray()[2]))
-    # # print("(2,2):",spatial.distance.cosine(BOW.toarray()[2], BOW.toarray()[2]))
+    cosine_similarity = bow.pairwise(matrix)
 
-    # print("Cosine similarity")
-    # from sklearn.metrics.pairwise import linear_kernel
+    cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns = [*range(len(matrix))])
+    print(cosine_similarity_pd)
 
-    # cosine_similarity = linear_kernel(matrix, matrix)
-
-    # cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns = [*range(len(matrix.toarray()))])
-    # print(cosine_similarity_pd)
+    print(bow.distance(matrix))
