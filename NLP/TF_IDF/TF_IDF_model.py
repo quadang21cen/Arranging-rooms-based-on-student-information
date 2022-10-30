@@ -1,4 +1,4 @@
-
+from sklearn.metrics.pairwise import cosine_similarity
 from underthesea import text_normalize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import string
@@ -74,7 +74,7 @@ import string
 
 class TF_IDF_class:
     def __init__(self) -> None:
-        self.stopwords_path = "vietnamese_stopwords.txt"
+        self.stopwords_path = "NLP\\TF_IDF\\vietnamese_stopwords.txt"
 
     def get_stopwords_list(self, stop_file_path):
         """load stop words """
@@ -102,6 +102,11 @@ class TF_IDF_class:
         vect, tfidf = self.transform_vector(text_list)
         arrays = [value for value in tfidf.toarray()]
         return arrays
+    def pairwise(self, matrix):
+        return cosine_similarity(matrix, matrix)
+    def compare_vectors(self, vec1, vec2):
+        return cosine_similarity([vec1], [vec2])
+
 
 
 def test():
@@ -125,21 +130,13 @@ tf_idf = TF_IDF_class()
 vect, tfidf = tf_idf.transform_vector(df['Bio_personality'])
 
 import pandas as pd
-feature_df = pd.DataFrame(tf_idf.text2vec(df['Bio_personality']),
+feature_df = pd.DataFrame(tfidf.todense(),
                         columns=vect.get_feature_names_out())
-#print(tfidf.shape)
-print(df['Bio_personality'].shape)
-print(tfidf.toarray())
-arrays = [value for value in tfidf.toarray()]
-print(tfidf.toarray())
-print(arrays)
-df['Bio_personality'] = arrays
-print(df['Bio_personality'])
 
 feature_df.to_csv("test.csv")
 
 pairwise_similarity = tfidf * tfidf.T 
-
-print("Do tuong dong:",pairwise_similarity)
-
-
+matrix = tf_idf.text2vec(df['Bio_personality'])
+print(tf_idf.pairwise(matrix))
+cosine_similarity_pd = pd.DataFrame(tf_idf.pairwise(matrix), columns = [*range(len(matrix))])
+print(cosine_similarity_pd)
