@@ -2,6 +2,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from underthesea import text_normalize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import string
+from sklearn.metrics import pairwise_distances
+
 import numpy as np
 from sklearn.model_selection import train_test_split
 import seaborn as sns
@@ -34,9 +36,12 @@ class TF_IDF_class:
         return vect,tfidf
     def text2vec(self, text_list):
         vect, tfidf = self.transform_vector(text_list)
-        arrays = [value for value in tfidf.toarray()]
-        return arrays
-    def pairwise(self, matrix):
+        return tfidf.toarray()
+
+    def pairwise(self, matrix, metric='jaccard'):
+        return pairwise_distances(matrix, matrix, metric=metric)
+
+    def pairwise_cosine(self, matrix):
         return cosine_similarity(matrix, matrix)
     def compare_vectors(self, vec1, vec2):
         return cosine_similarity([vec1], [vec2])
@@ -78,10 +83,19 @@ feature_df = pd.DataFrame(tfidf.todense(),
 
 feature_df.to_csv("test.csv")
 
-pairwise_similarity = tfidf * tfidf.T 
 matrix = tf_idf.text2vec(df['Bio_personality'])
-print(tf_idf.pairwise(matrix))
-cosine_similarity_pd = pd.DataFrame(tf_idf.pairwise(matrix), columns = [*range(len(matrix))])
+
+jac_dissimilarity = tf_idf.pairwise(matrix, metric='jaccard')
+print(jac_dissimilarity)
+# Sự không tương đồng giữa các văn bản
+print("jaccard dissimilarity")
+jac_dissimilarity_pd = pd.DataFrame(jac_dissimilarity, columns = [*range(len(matrix))])
+print(jac_dissimilarity_pd)
+
+# Sự tương đồng giữa các văn bản
+print("Cosine similarity")
+cosine_similarity = tf_idf.pairwise_cosine(matrix)
+cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns=[*range(len(matrix))])
 print(cosine_similarity_pd)
 
 # Đánh giá độ chính xác bằng text classification
