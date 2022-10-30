@@ -38,6 +38,13 @@ class BM25_class:
         text_corpus = self.tokenize_vn_docs(text_list)
         vect = BM25Okapi(text_corpus)
         return vect
+    def pairwise(self, vec, text_list):
+        corpus = self.tokenize_vn_docs(text_list)
+        sim_matrix = []
+        for words in corpus:
+            sim = vec.get_scores(words)
+            sim_matrix.append(sim)
+        return sim_matrix
 
 if __name__ == '__main__':
     # Giống như doc2vec (search google gợi ý câu gần nhất)
@@ -53,5 +60,13 @@ if __name__ == '__main__':
     query = "Ban dang boi loi, nghe nhac"
     tokenized_query = BM25_instance.tokenize_vn(query)
 
+    # Cho ra 1 array chứa giá trị so sánh giữa query và corpus
     print(vec.get_scores(tokenized_query))
+
+    # Cho ra câu gần nhất với query
     print(vec.get_top_n(tokenized_query, corpus, n=1))
+
+    # pairwise matrix cho BM25
+    sim_matrix = BM25_instance.pairwise(vec,corpus)
+    sim_matrix_pd = pd.DataFrame(sim_matrix, columns=[*range(len(sim_matrix))])
+    print(sim_matrix_pd)
