@@ -31,11 +31,19 @@ class Bag_Of_Word:
         clean_words = [w for w in doc if w not in punctuation]
         clean_words = [w for w in clean_words if (" " in w) or w.isalpha()]
         return clean_words
+    def jacc_similarity(self, vector1, vector2):
+        jacc_num = 0
+        jacc_den = 0
+        for index, value in enumerate(vector1):
+            if float(vector1[index]) != 0 or float(vector2[index]) != 0:
+                jacc_den += max(vector1[index], vector2[index])
+                jacc_num += min(vector1[index], vector2[index])
+        return jacc_num / jacc_den
 
     def transform_vector(self, text_list):
         # Create TfidfVectorizer for Vietnamese
         stop_words_list = self.get_stopwords_list(self.stopwords_path)
-        vect = CountVectorizer(tokenizer=self.tokenize_vn, stop_words=stop_words_list, lowercase=True, ngram_range=(1,3), max_features=3000)
+        vect = CountVectorizer(tokenizer=self.tokenize_vn, stop_words=stop_words_list, lowercase=True, ngram_range=(1,5))
         tfidf = vect.fit_transform(text_list)
         return vect,tfidf
 
@@ -49,6 +57,8 @@ class Bag_Of_Word:
 
     def pairwise_cosine(self, matrix):
         return cosine_similarity(matrix, matrix)
+    def pairwise_jac(self, matrix):
+        return [[self.jacc_similarity(vec1, vec2) for vec2 in matrix] for vec1 in matrix]
 
     def compare_vectors(self, vec1, vec2):
         return cosine_similarity([vec1], [vec2])
