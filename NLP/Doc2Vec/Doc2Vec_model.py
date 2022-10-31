@@ -1,3 +1,4 @@
+# pip install -U kaleido
 from underthesea import text_normalize, word_tokenize
 from gensim.models import fasttext, word2vec
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -5,9 +6,13 @@ import pandas as pd
 import re
 from pathlib import Path
 from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.cluster import Birch
+from sklearn import metrics
 
 from matplotlib import pyplot as plt
 import numpy as np
+import plotly.express as px
 
 import warnings
 import time
@@ -55,11 +60,11 @@ def infer_vector_worker(document,model):
 
 class Doc2Vec_Class:
     def __init__(self) -> None:
-        self.stopwords_path = "NLP\\Doc2Vec\\vietnamese_stopwords.txt"
+        self.stopwords_path = "vietnamese_stopwords.txt"
         self.model = None
     def load(self, path):
         self.model = Doc2Vec.load(path)
-    def train(self, df, feature_list, save_folder, vector_size = 100, window = 2, epoch = 100):
+    def train(self, df, feature_list, save_folder, vector_size = 100, window = 2, epoch = 100, min_count = 1, min_alpha = 0.0001, alpha = 0.0025):
         start_time = time.time()
         for feature in feature_list:
             clean = clean_text(df[feature])  # chuyen hoa thanh thuong, xoa bo ky tu dac biet
@@ -69,7 +74,7 @@ class Doc2Vec_Class:
             # Notice: maintaining a large vector size with tiny data (which allows severe model overfitting)
             # if it's not tens-of-thousands of texts, use a smaller vector size and more epochs (but realize results may still be weak with small data sets)
             # if each text is tiny, use more epochs (but realize results may still be a weaker than with longer texts)
-            model = Doc2Vec(vector_size=vector_size, window=window, min_count=1, epochs=epoch)
+            model = Doc2Vec(vector_size=vector_size, window=window, min_count=min_count, epochs=epoch, min_alpha=min_alpha, alpha=alpha)
             model.build_vocab(tagged_data)
             model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
             Path(save_folder+"/"+str(feature)).mkdir(parents=True, exist_ok=True)
@@ -128,8 +133,6 @@ class Doc2Vec_Class:
         plt.savefig(save_file)
 
     def birch_score(self, save_file):
-        from sklearn.cluster import Birch
-        from sklearn import metrics
         doc_tags = self.model.dv.index_to_key
         X = model.dv[doc_tags]
         k = 3
@@ -148,6 +151,67 @@ class Doc2Vec_Class:
         print(silhouette_score)
         with open(save_file, 'w') as f:
             f.write("Silhouette_score: "+str(silhouette_score))
+
+    def find_optimal_clusters(data, max_k):
+        iters = range(2, max_k + 1, 2)
+
+        sse = []
+        for k in iters:
+            sse.append(
+                MiniBatchKMeans(n_clusters=k, init_size=1024, batch_size=2048, random_state=20).fit(data).inertia_)
+            print('Fit {} clusters'.format(k))
+        plt.figure(u'optimal clusters')
+        f, ax = plt.subplots(1, 1)
+        ax.plot(iters, sse, marker='o')
+        ax.set_xlabel('Cluster Centers')
+        ax.set_xticks(iters)
+        ax.set_xticklabels(iters)
+        ax.set_ylabel('SSE')
+        ax.set_title('SSE by Cluster Center Plot')
+        plt.show()
+    def semantic_clustering(self,k):
+        kmeans_model = KMeans(n_clusters=k)
+
+        kmeans_model.fit(self.model.dv.vectors)
+        labels = kmeans_model.labels_
+        clusters = kmeans_model.fit_predict(self.model.dv.vectors)
+
+        # Applying PCA to reduce the number of dimensions.
+        X = np.array(self.model.dv.vectors)
+
+        pca = PCA(n_components=3)
+        result = pca.fit_transform(X)
+        # create dataframe to feed to
+
+        df = pd.DataFrame({
+            'sent': self.model.dv.index_to_key, # Take integer id number from 0
+            'cluster': labels.astype(str),
+            'x': result[:, 0],
+            'y': result[:, 1],
+            'z': result[:, 2]
+        })
+        # Score
+        silhouette_score = metrics.silhouette_score(X, labels, metric='cosine')
+        print("Silhouette_score: ", silhouette_score)
+
+        fig = px.scatter_3d(df, x='x', y='y', z='z',
+                            color='cluster', hover_name='sent',
+                            range_x=[df.x.min() - 1, df.x.max() + 1],
+                            range_y=[df.y.min() - 1, df.y.max() + 1],
+                            range_z=[df.z.min() - 1, df.z.max() + 1])
+        fig.update_traces(hovertemplate='<b>%{hovertext}</b>')
+        fig.show()
+        fig.write_image("semantic_clustering.pdf")
+    def measure_distance(self, vec_list): # Đây là đo khoảng cách. Trái ngược với đo độ tương đồng similarity
+
+        # compute distance
+        distances = (
+            metrics.pairwise_distances(
+                vec_list[0].reshape(1, -1),
+                vec_list[1].reshape(1, -1),
+                metric)[0][0] for metric in ["cosine", "manhattan", "euclidean"]
+        )
+        return distances
 
     def find_most_similar(self, text, epochs = 50, alpha = 0.0001, topn= 5):
         # try other infer_vector() parameters, such as steps=50 (or more, especially with small texts), and alpha=0.025
@@ -177,25 +241,39 @@ if __name__ == '__main__':
     print(doc2vec.pairwise_unknown_docs(doc_list))
 
     # Lấy tât cả vector đã train trên model, dùng hàm này
-    print(doc2vec.load_to_matrix())
+    dv_vector = doc2vec.load_to_matrix()
+    print(dv_vector)
 
     # Pairwise với vector
     matrix = doc2vec.load_to_matrix()
     print(doc2vec.pairwise_vectors(matrix))
 
     # So sánh 2 đoạn văn bản doc1 và doc2 dùng hàm của gensim doc2vec theo cách tính cosine similarity ( Chuẩn hơn )
-    print(doc2vec.compare_two_unknown_docs(doc1, doc2))
+    doc_ex1 = "Tôi là ai"
+    doc_ex2 = "Bạn đang làm cái gì "
+    print(doc2vec.compare_two_unknown_docs(doc_ex1, doc_ex2))
 
     # So sánh 2 đoạn văn bản doc1 và doc2 dùng hàm của sklearn.pairwise theo cách tính cosine similarity ( càng thấp thì càng gần giống )
-    print(doc2vec.distance(doc1, doc2))
+    print(doc2vec.distance(doc_ex1, doc_ex2))
 
     # Nếu muốn chuyển text thành vector, dùng hàm này (epochs, alpha learning rate)
-    print(doc2vec.infer_vector_model(doc1, epochs = 50, alpha = 0.25))
+    vector = doc2vec.infer_vector_model(doc1, epochs = 50, alpha = 0.25)
+    print(vector)
 
     # Có thể dùng để recommend ( đề nghị ) các đoạnn văn bản giống nhau nếu dùng hàm này ( topn dùng để recommend bao nhiêu ví dụ gần giống với đoạn văn bản doc)
     similarity_docs = doc2vec.find_most_similar(doc1, topn=5)
     similarity_docs_id = [item[0] for item in similarity_docs]
     print(similarity_docs_id)
+
+    # Tính similarity dựa vào khoảng cách
+    cosine, manhattan, euclidean = doc2vec.measure_distance(dv_vector)
+    cosine_similar_score = 1 - cosine
+    print(cosine_similar_score)
+
+    # Clustering các đoạn văn bản dùng Kmeans và PCA
+    doc2vec.semantic_clustering(k=5)
+
+
 
     # list_features = ["Bio_personality", "food_drink", "hobby_interests"]
     # doc2vec.train(file_pd, feature_list=list_features, save_file = "result.model", vector_size=20, window=5, epoch=100)
