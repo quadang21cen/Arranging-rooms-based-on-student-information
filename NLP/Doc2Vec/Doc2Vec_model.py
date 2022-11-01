@@ -1,3 +1,4 @@
+# pip install -U kaleido
 from underthesea import text_normalize, word_tokenize
 from gensim.models import fasttext, word2vec
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -5,12 +6,18 @@ import pandas as pd
 import re
 from pathlib import Path
 from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.cluster import Birch
+from sklearn import metrics
 
 from matplotlib import pyplot as plt
 import numpy as np
+import plotly.express as px
 
 import warnings
 import time
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import accuracy_score
 warnings.filterwarnings('ignore')
 
 def clean_text(corpus):
@@ -42,8 +49,6 @@ def corpus_list(text, stopwords_path):
     for i in range(len(text)):
         word_list = word_tokenize(text[i])
         word_list = [word for word in word_list if not word in stopwords]
-        #for n in range(len(word_list)):
-        #    word_list[n] = re.sub(" ", "_", word_list[n])
         corpus.append(word_list)
     return corpus
 
@@ -58,7 +63,9 @@ class Doc2Vec_Class:
     def __init__(self) -> None:
         self.stopwords_path = "vietnamese_stopwords.txt"
         self.model = None
-    def train(self, df, feature_list, save_folder, vector_size = 100, window = 2, epoch = 100):
+    def load(self, path):
+        self.model = Doc2Vec.load(path)
+    def train(self, df, feature_list, save_folder, vector_size = 100, window = 2, epoch = 100, min_count = 1, min_alpha = 0.0001, alpha = 0.0025):
         start_time = time.time()
         for feature in feature_list:
             clean = clean_text(df[feature])  # chuyen hoa thanh thuong, xoa bo ky tu dac biet
@@ -68,35 +75,54 @@ class Doc2Vec_Class:
             # Notice: maintaining a large vector size with tiny data (which allows severe model overfitting)
             # if it's not tens-of-thousands of texts, use a smaller vector size and more epochs (but realize results may still be weak with small data sets)
             # if each text is tiny, use more epochs (but realize results may still be a weaker than with longer texts)
-            model = Doc2Vec(vector_size=vector_size, window=window, min_count=1, epochs=epoch)
+            model = Doc2Vec(vector_size=vector_size, window=window, min_count=min_count, epochs=epoch, min_alpha=min_alpha, alpha=alpha)
             model.build_vocab(tagged_data)
             model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
             Path(save_folder+"/"+str(feature)).mkdir(parents=True, exist_ok=True)
-            model.save(save_folder+"/"+str(feature) + ".model")
+            model.save(save_folder+"/"+str(feature) + "size {} words {} epochs {}.model".format(vector_size, window, epoch))
             print("FINISH...", feature)
             print("Finish in--- %s seconds ---" % (time.time() - start_time))
-    def load_to_matrix(self, model):
-        self.model = Doc2Vec.load(model)
+    def load_to_matrix(self):
         vectors = self.model.dv.vectors
         return vectors
-    def load_to_unknown_matrix(self, path, text):
-        self.model = Doc2Vec.load(path)
-        return self.model.infer_vector(text)
-    def compare_using_cosine_sklearn(self, mat1, mat2):
-        from sklearn.metrics.pairwise import cosine_similarity
-        return (cosine_similarity(mat1, mat2) * 100)
+    def infer_vector_model(self, text, epochs = 50, alpha = 0.25, min_alpha = 0.001):
+        vector = self.model.infer_vector(sum(corpus_list(clean_text([text]), stopwords_path=self.stopwords_path),[]), epochs=epochs, alpha=alpha, min_alpha = min_alpha)
+        return vector
 
-    def compare_two_unknown_docs(self, save_file, text1, text2):
-        self.model = Doc2Vec.load(save_file)
+    def compare_two_unknown_docs(self, text1, text2, min_alpha = 0.0001, alpha = 0.25, epochs = 10):
         return self.model.similarity_unseen_docs(sum(corpus_list(clean_text([text1]), stopwords_path=self.stopwords_path), []),
-                                                 sum(corpus_list(clean_text([text2]), stopwords_path=self.stopwords_path), []))
+                                                 sum(corpus_list(clean_text([text2]), stopwords_path=self.stopwords_path), [])
+                                                 , min_alpha = min_alpha, alpha = alpha, epochs = epochs)
+    def distance(self, text1, text2, min_alpha = 0.0001, alpha = 0.25, epochs = 10):
+        vector1 = self.model.infer_vector(sum(corpus_list(clean_text([text1]), stopwords_path=self.stopwords_path), []),
+                                          min_alpha = min_alpha, alpha = alpha, epochs = epochs)
+        vector2 = self.model.infer_vector(sum(corpus_list(clean_text([text2]), stopwords_path=self.stopwords_path), []),
+                                          min_alpha = min_alpha, alpha = alpha, epochs = epochs)
+        return cosine_similarity([vector1], [vector2])
+    def pairwise_vectors(self, matrix):
+        return cosine_similarity(matrix, matrix)
+    def pairwise_unknown_docs(self, text_list, min_alpha = 0.0001, alpha = 0.25, epochs = 10):
+        # similar_list = []
+        # for text1 in text_list:
+        #     similar_sublist = []
+        #     for text2 in text_list:
+        #         sim = self.model.similarity_unseen_docs(
+        #             sum(corpus_list(clean_text([text1]), stopwords_path=self.stopwords_path), []),
+        #             sum(corpus_list(clean_text([text2]), stopwords_path=self.stopwords_path), [])
+        #             , min_alpha=min_alpha, alpha=alpha, epochs=epochs)
+        #         similar_sublist.append(sim)
+        #     similar_list.append(similar_sublist)
+        similar_list = [[self.model.similarity_unseen_docs(
+                    sum(corpus_list(clean_text([text1]), stopwords_path=self.stopwords_path), []),
+                    sum(corpus_list(clean_text([text2]), stopwords_path=self.stopwords_path), [])
+                    , min_alpha=min_alpha, alpha=alpha, epochs=epochs)for text2 in text_list] for text1 in text_list]
+        return similar_list
 
-    def cluster_TSNE(self,model, save_file):
+    def cluster_TSNE(self, save_file):
         from sklearn.manifold import TSNE
         import matplotlib.pyplot as plt
-        model = Doc2Vec.load(model)
         # doc_tags = model.dv.doctags.keys() # Gensim older version
-        doc_tags = model.dv.index_to_key
+        doc_tags = self.model.dv.index_to_key
 
         #print(doc_tags)
         X = model.dv[doc_tags]
@@ -107,11 +133,8 @@ class Doc2Vec_Class:
         plt.scatter(df['x'], df['y'], s=0.4, alpha=0.4)
         plt.savefig(save_file)
 
-    def birch_score(self, model, save_file):
-        from sklearn.cluster import Birch
-        from sklearn import metrics
-        model = Doc2Vec.load(model)
-        doc_tags = model.dv.index_to_key
+    def birch_score(self, save_file):
+        doc_tags = self.model.dv.index_to_key
         X = model.dv[doc_tags]
         k = 3
         brc = Birch(branching_factor=50, n_clusters=k, threshold=0.1, compute_labels=True)
@@ -130,53 +153,151 @@ class Doc2Vec_Class:
         with open(save_file, 'w') as f:
             f.write("Silhouette_score: "+str(silhouette_score))
 
-    def find_most_similar(self, model, text, epochs = 50, alpha = 0.25):
+    def find_optimal_clusters(data, max_k):
+        iters = range(2, max_k + 1, 2)
+
+        sse = []
+        for k in iters:
+            sse.append(
+                MiniBatchKMeans(n_clusters=k, init_size=1024, batch_size=2048, random_state=20).fit(data).inertia_)
+            print('Fit {} clusters'.format(k))
+        plt.figure(u'optimal clusters')
+        f, ax = plt.subplots(1, 1)
+        ax.plot(iters, sse, marker='o')
+        ax.set_xlabel('Cluster Centers')
+        ax.set_xticks(iters)
+        ax.set_xticklabels(iters)
+        ax.set_ylabel('SSE')
+        ax.set_title('SSE by Cluster Center Plot')
+        plt.show()
+    def semantic_clustering(self,k):
+        kmeans_model = KMeans(n_clusters=k)
+
+        kmeans_model.fit(self.model.dv.vectors)
+        labels = kmeans_model.labels_
+        clusters = kmeans_model.fit_predict(self.model.dv.vectors)
+
+        # Applying PCA to reduce the number of dimensions.
+        X = np.array(self.model.dv.vectors)
+
+        pca = PCA(n_components=3)
+        result = pca.fit_transform(X)
+        # create dataframe to feed to
+
+        df = pd.DataFrame({
+            'sent': self.model.dv.index_to_key, # Take integer id number from 0
+            'cluster': labels.astype(str),
+            'x': result[:, 0],
+            'y': result[:, 1],
+            'z': result[:, 2]
+        })
+        # Score
+        silhouette_score = metrics.silhouette_score(X, labels, metric='cosine')
+        print("Silhouette_score: ", silhouette_score)
+
+        fig = px.scatter_3d(df, x='x', y='y', z='z',
+                            color='cluster', hover_name='sent',
+                            range_x=[df.x.min() - 1, df.x.max() + 1],
+                            range_y=[df.y.min() - 1, df.y.max() + 1],
+                            range_z=[df.z.min() - 1, df.z.max() + 1])
+        fig.update_traces(hovertemplate='<b>%{hovertext}</b>')
+        print('Accuracy of the model {}'.format(accuracy_score(self.model.dv.vectors, clusters)))
+        fig.show()
+        fig.write_image("semantic_clustering.pdf")
+    def measure_distance(self, vec_list): # Đây là đo khoảng cách. Trái ngược với đo độ tương đồng similarity
+
+        # compute distance
+        distances = (
+            metrics.pairwise_distances(
+                vec_list[0].reshape(1, -1),
+                vec_list[1].reshape(1, -1),
+                metric)[0][0] for metric in ["cosine", "manhattan", "euclidean"]
+        )
+        return distances
+
+    def find_most_similar(self, text, epochs = 50, alpha = 0.0001, topn= 5):
         # try other infer_vector() parameters, such as steps=50 (or more, especially with small texts), and alpha=0.025
+        vector = self.model.infer_vector(sum(corpus_list(clean_text([text]), stopwords_path=self.stopwords_path),[]), epochs=epochs, alpha=alpha)
+        similar_text = self.model.dv.most_similar(vector, topn=topn)
 
-        vector = model.infer_vector(sum(corpus_list(clean_text([text]), stopwords_path=self.stopwords_path),[]), epochs=epochs, alpha=alpha)
-        similar_text = model.dv.most_similar(vector, topn=len(model.dv))
-        # Print doc_tags
-        # print(similar_text[:][0])
-
-        # Print vector similar
-        # print(similar_text[:][1])
-
-        # Print 5 most similar docs
-        # print(similar_text[:5])
-        #Print 5 least similar docs
-        # print(similar_text[-5:])
-
-        # Print Words
-        # original_corpus = sum(corpus_list(original_df_feature, stopwords_path=self.stopwords_path)),[]) # original_df_feature: The train dataset feature
-        # print(' '.original_corpus[similar_text[index][0]].words)
-        return similar_text[:5]
+        return similar_text
 
 if __name__ == '__main__':
-    file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
-    print(file_pd.columns)
-    file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
-       'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
-    #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-    #                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
-    features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-                              "smoking", "refer_roommate", "Cleanliess", "Privacy"]
-    file_pd.columns = features
+    # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+    # print(file_pd.columns)
+    # file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
+    #    'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
+    # #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+    # #                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+    # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+    #                           "smoking", "refer_roommate", "Cleanliess", "Privacy"]
+    # file_pd.columns = features
+    doc1 = "Tôi la ai"
+    doc2 = "Tôi là cái gì"
+    doc_list = ["Tôi la ai", "Tôi là cái gì", "Toi la the nao"]
     doc2vec = Doc2Vec_Class()
-    list_features = ["Bio_personality", "food_drink", "hobby_interests"]
-    doc2vec.train(file_pd, feature_list=list_features, save_file = "result.model", vector_size=20, window=5, epoch=100)
-    start_time = time.time()
-    vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
-    # Values often range between -1 and 1
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print(vectors)
-    start_time = time.time()
-    doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5),save_file="1.png")
-    print("--- %s seconds ---" % (time.time() - start_time))
-    start_time = time.time()
-    doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5), save_file="1.txt")
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "code chụp anhr âm nhạc"))
-    print(doc2vec.find_most_similar(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)), text="mình thích đọc tiểu thuyết"))
+    # doc2vec.train(df = file_pd, feature_list = features, save_folder = "model", vector_size = 100, window = 2, epoch = 100)
+    doc2vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+
+    # Pairwise với gensim doc2vec
+    print(doc2vec.pairwise_unknown_docs(doc_list))
+
+    # Lấy tât cả vector đã train trên model, dùng hàm này
+    dv_vector = doc2vec.load_to_matrix()
+    print(dv_vector)
+
+    # Pairwise với vector
+    matrix = doc2vec.load_to_matrix()
+    print(doc2vec.pairwise_vectors(matrix))
+
+    # So sánh 2 đoạn văn bản doc1 và doc2 dùng hàm của gensim doc2vec theo cách tính cosine similarity ( Chuẩn hơn )
+    doc_ex1 = "Tôi là ai"
+    doc_ex2 = "Bạn đang làm cái gì "
+    print(doc2vec.compare_two_unknown_docs(doc_ex1, doc_ex2))
+
+    # So sánh 2 đoạn văn bản doc1 và doc2 dùng hàm của sklearn.pairwise theo cách tính cosine similarity ( càng thấp thì càng gần giống )
+    print(doc2vec.distance(doc_ex1, doc_ex2))
+
+    # Nếu muốn chuyển text thành vector, dùng hàm này (epochs càng nhiều độ chênh lệch giữa vector của cùng 1 text càng ngắn,
+    # alpha là learning rate)
+    vector = doc2vec.infer_vector_model(doc1, epochs = 50, alpha = 0.025, min_alpha=0.0001)
+    print(vector)
+
+    # Có thể dùng để recommend ( đề nghị ) các đoạnn văn bản giống nhau nếu dùng hàm này ( topn dùng để recommend bao nhiêu ví dụ gần giống với đoạn văn bản doc)
+    similarity_docs = doc2vec.find_most_similar(doc1, topn=5)
+    similarity_docs_id = [item[0] for item in similarity_docs]
+    print(similarity_docs_id)
+
+    # Tính similarity dựa vào khoảng cách với vector
+    text_list = ["Document 1", "Document 2"]
+    vectors_for_unknown_text = [doc2vec.infer_vector_model(text) for text in text_list]
+    cosine, manhattan, euclidean = doc2vec.measure_distance(dv_vector)
+    # cosine, manhattan, euclidean = doc2vec.measure_distance(vectors_for_unknown_text)
+    cosine_similar_score = 1 - cosine
+    print(cosine_similar_score)
+
+    # Clustering các đoạn văn bản dùng Kmeans và PCA
+    doc2vec.semantic_clustering(k=5)
+
+
+
+    # list_features = ["Bio_personality", "food_drink", "hobby_interests"]
+    # doc2vec.train(file_pd, feature_list=list_features, save_file = "result.model", vector_size=20, window=5, epoch=100)
+
+
+    # start_time = time.time()
+    # vectors = doc2vec.load_to_matrix("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
+    # # Values often range between -1 and 1
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print(vectors)
+    # start_time = time.time()
+    # doc2vec.cluster_TSNE("./{}/size {} words {}.model".format("Bio_personality", 20, 5),save_file="1.png")
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # start_time = time.time()
+    # doc2vec.birch_score("./{}/size {} words {}.model".format("Bio_personality", 20, 5), save_file="1.txt")
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print(doc2vec.compare_two_unknown_docs(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)),"mình thích đọc tiểu thuyết", "code chụp anhr âm nhạc"))
+    # print(doc2vec.find_most_similar(Doc2Vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5)), text="mình thích đọc tiểu thuyết"))
 
 
 
