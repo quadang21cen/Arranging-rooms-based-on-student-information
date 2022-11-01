@@ -17,10 +17,8 @@ import plotly.express as px
 import warnings
 import time
 from sklearn.metrics.pairwise import cosine_similarity
-<<<<<<< HEAD
+
 from sklearn.metrics import accuracy_score
-=======
->>>>>>> 268092a8f819ca591f4f026ee1882feef41dd756
 warnings.filterwarnings('ignore')
 
 def clean_text(corpus):
@@ -204,10 +202,7 @@ class Doc2Vec_Class:
                             range_y=[df.y.min() - 1, df.y.max() + 1],
                             range_z=[df.z.min() - 1, df.z.max() + 1])
         fig.update_traces(hovertemplate='<b>%{hovertext}</b>')
-<<<<<<< HEAD
         print('Accuracy of the model {}'.format(accuracy_score(self.model.dv.vectors, clusters)))
-=======
->>>>>>> 268092a8f819ca591f4f026ee1882feef41dd756
         fig.show()
         fig.write_image("semantic_clustering.pdf")
     def measure_distance(self, vec_list): # Đây là đo khoảng cách. Trái ngược với đo độ tương đồng similarity
