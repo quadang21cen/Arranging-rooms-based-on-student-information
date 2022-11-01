@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import pandas as pd
 from rank_bm25 import *
 from underthesea import text_normalize, word_tokenize
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     # pairwise matrix cho BM25
     sim_matrix = BM25_instance.pairwise(vec,corpus)
     sim_matrix_pd = pd.DataFrame(sim_matrix, columns=[*range(len(sim_matrix))])
-=======
+
 import pandas as pd
 from rank_bm25 import *
 from underthesea import text_normalize, word_tokenize
@@ -142,5 +142,4 @@ if __name__ == '__main__':
     # pairwise matrix cho BM25
     sim_matrix = BM25_instance.pairwise(vec,corpus)
     sim_matrix_pd = pd.DataFrame(sim_matrix, columns=[*range(len(sim_matrix))])
->>>>>>> 268092a8f819ca591f4f026ee1882feef41dd756
     print(sim_matrix_pd)
