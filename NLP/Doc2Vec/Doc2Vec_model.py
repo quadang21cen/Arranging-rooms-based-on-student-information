@@ -256,8 +256,9 @@ if __name__ == '__main__':
     # So sánh 2 đoạn văn bản doc1 và doc2 dùng hàm của sklearn.pairwise theo cách tính cosine similarity ( càng thấp thì càng gần giống )
     print(doc2vec.distance(doc_ex1, doc_ex2))
 
-    # Nếu muốn chuyển text thành vector, dùng hàm này (epochs, alpha learning rate)
-    vector = doc2vec.infer_vector_model(doc1, epochs = 50, alpha = 0.25)
+    # Nếu muốn chuyển text thành vector, dùng hàm này (epochs càng nhiều độ chênh lệch giữa vector của cùng 1 text càng ngắn,
+    # alpha là learning rate)
+    vector = doc2vec.infer_vector_model(doc1, epochs = 50, alpha = 0.025, min_alpha=0.0001)
     print(vector)
 
     # Có thể dùng để recommend ( đề nghị ) các đoạnn văn bản giống nhau nếu dùng hàm này ( topn dùng để recommend bao nhiêu ví dụ gần giống với đoạn văn bản doc)
@@ -265,8 +266,11 @@ if __name__ == '__main__':
     similarity_docs_id = [item[0] for item in similarity_docs]
     print(similarity_docs_id)
 
-    # Tính similarity dựa vào khoảng cách
+    # Tính similarity dựa vào khoảng cách với vector
+    text_list = ["Document 1", "Document 2"]
+    vectors_for_unknown_text = [doc2vec.infer_vector_model(text) for text in text_list]
     cosine, manhattan, euclidean = doc2vec.measure_distance(dv_vector)
+    # cosine, manhattan, euclidean = doc2vec.measure_distance(vectors_for_unknown_text)
     cosine_similar_score = 1 - cosine
     print(cosine_similar_score)
 
