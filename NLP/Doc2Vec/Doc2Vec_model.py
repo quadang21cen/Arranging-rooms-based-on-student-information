@@ -183,13 +183,13 @@ class Doc2Vec_Class:
         # iterate through each of our values
         for each_value in possible_K_values:
             # iterate through, taking each value from
-            model = KMeans(n_clusters=each_value, init='k-means++', random_state=32)
+            kmodel = KMeans(n_clusters=each_value, init='k-means++', random_state=32)
 
             # fit it
-            model.fit(df_scaled)
+            kmodel.fit(self.model.dv.vectors)
 
             # append the inertia to our array
-            inertia.append(model.inertia_)
+            inertia.append(kmodel.inertia_)
 
         plt.plot(possible_K_values, inertia)
         plt.title('The Elbow Method')
@@ -199,6 +199,39 @@ class Doc2Vec_Class:
         plt.ylabel('Inertia')
 
         plt.show()
+    def calculate_k_for_negatives(self):
+        bad_k_values = {}
+
+        # remember, anything past 15 looked really good based on the inertia
+        possible_K_values = [i for i in range(15, 30)]
+
+        # we start with 1, as we can not have 0 clusters in k means
+        # iterate through each of our values
+        for each_value in possible_K_values:
+
+            # iterate through, taking each value from
+            model = KMeans(n_clusters=each_value, init='k-means++', random_state=32)
+
+            # fit it
+            model.fit(self.model.dv.vectors)
+
+            # find each silhouette score
+            silhouette_score_individual = metrics.silhouette_samples(self.model.dv.vectors, model.predict(self.model.dv.vectors))
+
+            # iterate through to find any negative values
+            for each_silhouette in silhouette_score_individual:
+
+                # if we find a negative, lets start counting them
+                if each_silhouette < 0:
+
+                    if each_value not in bad_k_values:
+                        bad_k_values[each_value] = 1
+
+                    else:
+                        bad_k_values[each_value] += 1
+
+        for key, val in bad_k_values.items():
+            print(f' This Many Clusters: {key} | Number of Negative Values: {val}')
     def semantic_clustering(self,k):
         kmeans_model = KMeans(n_clusters=k)
 
@@ -236,11 +269,7 @@ class Doc2Vec_Class:
                             range_y=[df.y.min() - 1, df.y.max() + 1],
                             range_z=[df.z.min() - 1, df.z.max() + 1])
         fig.update_traces(hovertemplate='<b>%{hovertext}</b>')
-<<<<<<< HEAD
 
-=======
-        print('Accuracy of the model {}'.format(accuracy_score(self.model.dv.vectors, clusters)))
->>>>>>> fafe9358bd5a32a16b23c569e404aeb6f1b51007
         fig.show()
         fig.write_image("semantic_clustering.pdf")
     def measure_distance(self, vec_list): # Đây là đo khoảng cách. Trái ngược với đo độ tương đồng similarity
@@ -315,8 +344,11 @@ if __name__ == '__main__':
     cosine_similar_score = 1 - cosine
     print("Độ tương đồng của 2 văn bản:", cosine_similar_score)
 
+    # doc2vec.calculate_inertia()
+
     # Clustering các đoạn văn bản dùng Kmeans và PCA
-    doc2vec.semantic_clustering(k=20)
+    # Giá trị silhouette từ [-1; 1] : Số 1 là tốt nhất, -1 là tệ nhất, 0 là trùng nhau
+    doc2vec.semantic_clustering(k=49)
 
 
 

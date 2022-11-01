@@ -1,0 +1,4 @@
+K = 5: Silhouette_score ( Accuracy Score):  0.17365938
+	We have found 4967 negative silhouette score
+K = 20: Silhouette_score ( Accuracy Score):  0.18871944
+	We have found 3766 negative silhouette score
