@@ -17,6 +17,8 @@ import plotly.express as px
 import warnings
 import time
 from sklearn.metrics.pairwise import cosine_similarity
+
+from sklearn.metrics import accuracy_score
 warnings.filterwarnings('ignore')
 
 def clean_text(corpus):
@@ -169,6 +171,67 @@ class Doc2Vec_Class:
         ax.set_ylabel('SSE')
         ax.set_title('SSE by Cluster Center Plot')
         plt.show()
+    def calculate_inertia(self):
+        # calculate k using python, with the elbow method
+        inertia = []
+
+        # define our possible k values
+        possible_K_values = [i for i in range(2, 40)]
+
+        # we start with 2, as we can not have 0 clusters in k means, and 1 cluster is just a dataset
+
+        # iterate through each of our values
+        for each_value in possible_K_values:
+            # iterate through, taking each value from
+            kmodel = KMeans(n_clusters=each_value, init='k-means++', random_state=32)
+
+            # fit it
+            kmodel.fit(self.model.dv.vectors)
+
+            # append the inertia to our array
+            inertia.append(kmodel.inertia_)
+
+        plt.plot(possible_K_values, inertia)
+        plt.title('The Elbow Method')
+
+        plt.xlabel('Number of Clusters')
+
+        plt.ylabel('Inertia')
+
+        plt.show()
+    def calculate_k_for_negatives(self):
+        bad_k_values = {}
+
+        # remember, anything past 15 looked really good based on the inertia
+        possible_K_values = [i for i in range(15, 30)]
+
+        # we start with 1, as we can not have 0 clusters in k means
+        # iterate through each of our values
+        for each_value in possible_K_values:
+
+            # iterate through, taking each value from
+            model = KMeans(n_clusters=each_value, init='k-means++', random_state=32)
+
+            # fit it
+            model.fit(self.model.dv.vectors)
+
+            # find each silhouette score
+            silhouette_score_individual = metrics.silhouette_samples(self.model.dv.vectors, model.predict(self.model.dv.vectors))
+
+            # iterate through to find any negative values
+            for each_silhouette in silhouette_score_individual:
+
+                # if we find a negative, lets start counting them
+                if each_silhouette < 0:
+
+                    if each_value not in bad_k_values:
+                        bad_k_values[each_value] = 1
+
+                    else:
+                        bad_k_values[each_value] += 1
+
+        for key, val in bad_k_values.items():
+            print(f' This Many Clusters: {key} | Number of Negative Values: {val}')
     def semantic_clustering(self,k):
         kmeans_model = KMeans(n_clusters=k)
 
@@ -191,15 +254,22 @@ class Doc2Vec_Class:
             'z': result[:, 2]
         })
         # Score
-        silhouette_score = metrics.silhouette_score(X, labels, metric='cosine')
-        print("Silhouette_score: ", silhouette_score)
+        silhouette_score_average  = metrics.silhouette_score(self.model.dv.vectors, kmeans_model.predict(self.model.dv.vectors))
+        print("Silhouette_score ( Accuracy Score): ", silhouette_score_average)
 
+        silhouette_score_individual = metrics.silhouette_samples(self.model.dv.vectors, kmeans_model.predict(self.model.dv.vectors))
+        negative_score_len = 0
+        for each_value in silhouette_score_individual:
+            if each_value < 0:
+                negative_score_len +=1
+        print(f'We have found {negative_score_len} negative silhouette score')
         fig = px.scatter_3d(df, x='x', y='y', z='z',
                             color='cluster', hover_name='sent',
                             range_x=[df.x.min() - 1, df.x.max() + 1],
                             range_y=[df.y.min() - 1, df.y.max() + 1],
                             range_z=[df.z.min() - 1, df.z.max() + 1])
         fig.update_traces(hovertemplate='<b>%{hovertext}</b>')
+
         fig.show()
         fig.write_image("semantic_clustering.pdf")
     def measure_distance(self, vec_list): # Đây là đo khoảng cách. Trái ngược với đo độ tương đồng similarity
@@ -272,10 +342,13 @@ if __name__ == '__main__':
     cosine, manhattan, euclidean = doc2vec.measure_distance(dv_vector)
     # cosine, manhattan, euclidean = doc2vec.measure_distance(vectors_for_unknown_text)
     cosine_similar_score = 1 - cosine
-    print(cosine_similar_score)
+    print("Độ tương đồng của 2 văn bản:", cosine_similar_score)
+
+    # doc2vec.calculate_inertia()
 
     # Clustering các đoạn văn bản dùng Kmeans và PCA
-    doc2vec.semantic_clustering(k=5)
+    # Giá trị silhouette từ [-1; 1] : Số 1 là tốt nhất, -1 là tệ nhất, 0 là trùng nhau
+    doc2vec.semantic_clustering(k=49)
 
 
 
