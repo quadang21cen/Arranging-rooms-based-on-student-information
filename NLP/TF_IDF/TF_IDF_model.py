@@ -334,6 +334,9 @@ corpus = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
 import random
 df["labels"] = [random.randint(0, 5) for _ in range(len(df['Bio_personality']))]
 
+# class call a = tf_adf
+# a.tovector("sjsjs")    to predict 
+# a.predict 
 
 #label_id_df = df['labels'].drop_duplicates()
 #label_to_id = dict(label_id_df.values)
