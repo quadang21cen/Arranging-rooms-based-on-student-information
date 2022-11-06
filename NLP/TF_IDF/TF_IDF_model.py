@@ -12,6 +12,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import seaborn as sns
 import re
+from pathlib import Path
+import pickle
 class TF_IDF_class:
     def __init__(self) -> None:
         self.stopwords_path = "vietnamese_stopwords.txt"
@@ -57,9 +59,22 @@ class TF_IDF_class:
         vect = TfidfVectorizer(tokenizer=self.tokenize_vn, stop_words=stop_words_list, lowercase=True, ngram_range=(1,5))
         tfidf = vect.fit_transform(text_list)
         return vect,tfidf
-    def text2vec(self, text_list):
+    def build_vocab_save(self, text_list, save_folder, save_file):
+        Path(save_folder).mkdir(parents=True, exist_ok=True)
+        save_path = save_folder+"\\"+save_file
+        # Create TfidfVectorizer for Vietnamese
+        stop_words_list = self.get_stopwords_list(self.stopwords_path)
+        vect = TfidfVectorizer(tokenizer=self.tokenize_vn, stop_words=stop_words_list, lowercase=True, ngram_range=(1,5))
+        vector = vect.fit(text_list)
+        pickle.dump(vector, open(save_path, "wb"))
+    def text2vec(self, text_list, vect_file = None):
+        if vect_file is not None:
+            vector = pickle.load(open(vect_file, 'rb'))
+            tfidf = vector.transform(text_list)
+            return tfidf.toarray()
         vect, tfidf = self.transform_vector(text_list)
         return tfidf.toarray()
+
 
     def pairwise(self, matrix, metric='cosine'):
         return pairwise_distances(matrix, matrix, metric=metric)
@@ -78,7 +93,7 @@ class TF_IDF_class:
         clusters = kmeans_model.fit_predict(tfidf)
 
         # Applying PCA to reduce the number of dimensions.
-        X = np.array(tfidf.toarray())
+        X = np.array(tfidf.todense())
 
         pca = PCA(n_components=3)
         result = pca.fit_transform(X)
@@ -135,10 +150,13 @@ plot()
 # tfidf = vect.fit_transform(corpus)
 
 tf_idf = TF_IDF_class()
+# Tao tu dien
+tf_idf.build_vocab_save(df['Bio_personality'], save_folder="Bio_personality", save_file="tfidf.pickle")
+tfidf_array = tf_idf.text2vec(df['Bio_personality'], vect_file = "Bio_personality/tfidf.pickle")
 vect, tfidf = tf_idf.transform_vector(df['Bio_personality'])
 
 import pandas as pd
-feature_df = pd.DataFrame(tfidf.todense(),
+feature_df = pd.DataFrame(tfidf_array,
                         columns=vect.get_feature_names_out())
 
 feature_df.to_csv("test.csv")
@@ -250,7 +268,7 @@ print(classification_report(y_test, y_pred))
 print('Accuracy of the model {}'.format(accuracy_score(y_test, y_pred)))
 print("Y_test:",y_test[10:16])
 print("Y_pred:",y_pred[10:16])
-=======
+
 from sklearn.metrics.pairwise import cosine_similarity
 from underthesea import text_normalize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
@@ -459,4 +477,3 @@ print(classification_report(y_test, y_pred))
 plt.show()
 
 print('Accuracy of the model {}'.format(accuracy_score(y_test, y_pred)))
->>>>>>> 268092a8f819ca591f4f026ee1882feef41dd756

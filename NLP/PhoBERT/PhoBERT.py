@@ -6,10 +6,6 @@ import underthesea # Thư viện tách từ
 
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
 
-
-path = "D:\\FPT Lecture\\FALL2022\\Testing_The_RS_AIP491\\Arranging Room\\PhoBert"
-os.chdir(path)
-
 class PhoBERT_class:
   def __init__(self):
     self.stopwords = []
@@ -107,3 +103,4 @@ if __name__ == '__main__':
   # cosine_similarity = cosine_similarity(features, features)
   # cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns=[*range(len(features))])
   # print(cosine_similarity_pd)
+  
