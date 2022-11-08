@@ -62,7 +62,7 @@ def infer_vector_worker(document,model):
 
 class Doc2Vec_Class:
     def __init__(self) -> None:
-        self.stopwords_path = "vietnamese_stopwords.txt"
+        self.stopwords_path = "NLP\\Doc2Vec\\vietnamese_stopwords.txt"
         self.model = None
     def load(self, path):
         self.model = Doc2Vec.load(path)

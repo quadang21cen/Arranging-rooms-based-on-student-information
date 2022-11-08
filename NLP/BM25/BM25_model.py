@@ -6,7 +6,7 @@ import re
 import string
 class BM25_class:
     def __init__(self) -> None:
-        self.stopwords_path = "vietnamese_stopwords.txt"
+        self.stopwords_path = "NLP\\BM25\\vietnamese_stopwords.txt"
     def get_stopwords_list(self, stop_file_path):
         """load stop words """
 
