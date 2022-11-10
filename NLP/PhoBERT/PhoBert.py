@@ -92,7 +92,7 @@ if __name__ == '__main__':
           "Tôi thích bơi lội"
           ]
   # Gọi hàm text2Vec
-  features = text2vec_PhoBERT(rows = text, stopwords = "vietnamese_stopwords.txt", model= "vinai/phobert-base")
+  features = text2vec_PhoBERT(rows = text, stopwords = "NLP\\PhoBERT\\vietnamese_stopwords.txt", model= "vinai/phobert-base")
   print(features)
 
   # So sánh

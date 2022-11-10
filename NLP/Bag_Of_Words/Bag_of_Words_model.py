@@ -12,7 +12,7 @@ import seaborn as sns
 
 class Bag_Of_Word:
     def __init__(self) -> None:
-        self.stopwords_path = "vietnamese_stopwords.txt"
+        self.stopwords_path = "NLP\\Bag_Of_Words\\vietnamese_stopwords.txt"
 
     def get_stopwords_list(self, stop_file_path):
         """load stop words """

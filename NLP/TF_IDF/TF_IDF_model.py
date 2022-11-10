@@ -16,7 +16,7 @@ from pathlib import Path
 import pickle
 class TF_IDF_class:
     def __init__(self) -> None:
-        self.stopwords_path = "vietnamese_stopwords.txt"
+        self.stopwords_path = "NLP\\TF_IDF\\vietnamese_stopwords.txt"
     def get_stopwords_list(self, stop_file_path):
         """load stop words """
 
