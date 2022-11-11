@@ -15,11 +15,11 @@ class StringAugmentation:
     def augment(self, list_text):
         list_of_splits = [",", "và", "vừa"]
         tokens = self.split_tokens(list_text, list_of_splits)
-        random.shuffle(tokens)
+        #random.shuffle(tokens)
 
         return tokens
 
-list_samples = ["abc", "abc,bde,èg", "mlk, hik, ghi"]
+list_samples = ["abc", "abc,bde,èg", "quà, na, ngọc "]
 augment = StringAugmentation()
 results = augment.augment(list_samples)
 print(results)
