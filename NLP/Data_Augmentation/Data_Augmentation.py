@@ -16,13 +16,8 @@ class StringAugmentation:
         list_of_splits = [",", "và", "vừa"]
         tokens = self.split_tokens(list_text, list_of_splits)
         random.shuffle(tokens)
-        delete_gate = random.uniform(0, 1)
-        
-        for _ in range(num_words):
-            text =', '.join(random.sample(tokens, k=random.randint(1, 4)))
-            text = re.sub(' +', ' ', text)  # Remove more than one space
-            self.results.append(text)
-        return self.results
+
+        return tokens
 
 list_samples = ["Tôi đã làm tốt và học tập", "Tôi làm chức tổng giám đốc", "Quà, Na, Ngọc và Hạ"]
 augment = StringAugmentation()
