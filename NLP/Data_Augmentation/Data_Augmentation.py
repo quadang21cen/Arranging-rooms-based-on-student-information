@@ -20,7 +20,7 @@ class StringAugmentation:
 
         return tokens
 
-list_samples = ["abc", "abc,bde,èg", "quà, na, ngọc và hạ"]
+list_samples = ["abc", "xyz,sdad,sds và xyz", "sx,dds,sdds"]
 augment = StringAugmentation()
 results = augment.augment(list_samples)
 print(results)
