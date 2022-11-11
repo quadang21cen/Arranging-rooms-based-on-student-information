@@ -12,16 +12,16 @@ class StringAugmentation:
                 result_tokens = [(item.lower()).split(split_string) for item in list_words]
                 result_tokens = [item for l in result_tokens for item in l]
         return result_tokens
-    def augment(self, list_text, num_words):
+    def augment(self, list_text):
         list_of_splits = [",", "và", "vừa"]
         tokens = self.split_tokens(list_text, list_of_splits)
         random.shuffle(tokens)
 
         return tokens
 
-list_samples = ["Tôi đã làm tốt và học tập", "Tôi làm chức tổng giám đốc", "Quà, Na, Ngọc và Hạ"]
+list_samples = ["abc", "abc,bde,èg", "mlk, hik, ghi"]
 augment = StringAugmentation()
-results = augment.augment(list_samples, num_words = 10)
+results = augment.augment(list_samples)
 print(results)
 
 
