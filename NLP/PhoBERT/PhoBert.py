@@ -5,6 +5,8 @@ import re
 import underthesea # Thư viện tách từ
 
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
+import warnings
+warnings.filterwarnings('ignore')
 
 class PhoBERT_class:
   def __init__(self):
@@ -36,7 +38,6 @@ class PhoBERT_class:
     self.v_phobert = AutoModel.from_pretrained(path)
     self.v_tokenizer = AutoTokenizer.from_pretrained(path, use_fast=False)
   def make_bert_encode(self, line):
-    print("Đang xử lý line = ", line)
     # Phân thành từng từ
     line = underthesea.word_tokenize(line)
     # Lọc các từ vô nghĩa
@@ -65,7 +66,7 @@ class PhoBERT_class:
     # print('attention mask:', attention_mask[0])
 
     # Chuyển thành tensor
-    padded = torch.tensor(padded).to(torch.long)
+    padded = torch.tensor(padded).long()
     # print("Padd = ", padded.size())
     attention_mask = torch.tensor(attention_mask)
 
@@ -92,7 +93,7 @@ if __name__ == '__main__':
           "Tôi thích bơi lội"
           ]
   # Gọi hàm text2Vec
-  features = text2vec_PhoBERT(rows = text, stopwords = "NLP\\PhoBERT\\vietnamese_stopwords.txt", model= "vinai/phobert-base")
+  features = text2vec_PhoBERT(rows = text, stopwords = "vietnamese_stopwords.txt", model= "vinai/phobert-base")
   print(features)
 
   # So sánh

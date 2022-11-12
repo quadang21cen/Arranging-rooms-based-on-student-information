@@ -7,7 +7,7 @@ import underthesea # Thư viện tách từ
 import numpy as np
 
 
-from transformers import AutoTokenizer, AutoModelForMaskedLM # Thư viện BERT
+from transformers import AutoTokenizer, AutoModelForMaskedLM, RobertaModel# Thư viện BERT
 from transformers import AdamW
 
 from tqdm import tqdm  # for our progress bar
