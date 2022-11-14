@@ -16,7 +16,9 @@ class StringAugmentation:
     def augment(self, list_text):
         list_of_splits = [",", "và", "vừa"]
         tokens = self.split_tokens(list_text, list_of_splits)
-        #random.shuffle(tokens)
+        # Clean unnecessary spaces
+        tokens = [s.strip() for s in tokens]
+        tokens = [re.sub(' +', ' ', s) for s in tokens]
 
         return tokens
 if __name__ == "__main__":

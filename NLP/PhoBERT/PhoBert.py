@@ -5,7 +5,12 @@ import re
 import underthesea # Thư viện tách từ
 
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
+<<<<<<< HEAD
 warnings.filterwarnings('ignore')
+=======
+import warnings
+warnings.filterwarnings('ignore')
+
 class PhoBERT_class:
   def __init__(self):
     self.stopwords = []
