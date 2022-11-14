@@ -19,10 +19,10 @@ class StringAugmentation:
         #random.shuffle(tokens)
 
         return tokens
-
-list_samples = ["abc", "xyz,sdad,sds và xyz", "sx,dds,sdds"]
-augment = StringAugmentation()
-results = augment.augment(list_samples)
-print(results)
+if __name__ == "__main__":
+    list_samples = ["abc", "xyz,sdad,sds và xyz", "sx,dds,sdds"]
+    augment = StringAugmentation()
+    results = augment.augment(list_samples)
+    print(results)
 
 

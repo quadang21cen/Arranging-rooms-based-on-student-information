@@ -5,7 +5,7 @@ import re
 import underthesea # Thư viện tách từ
 
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
-
+warnings.filterwarnings('ignore')
 class PhoBERT_class:
   def __init__(self):
     self.stopwords = []
@@ -48,6 +48,7 @@ class PhoBERT_class:
     # Tokenize bởi BERT
     encoded_line = self.v_tokenizer.encode(line)
     return encoded_line
+    
   def make_bert_features(self, v_text):
     v_tokenized = []
     max_len = 100  # Mỗi câu dài tối đa 100 từ
