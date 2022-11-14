@@ -80,7 +80,7 @@ class PhoBERT_class:
   def text2vec_PhoBERT(self, rows):
     self.load_stopwords()
     self.load_bert()
-features = self.make_bert_features(rows)
+    features = self.make_bert_features(rows)
     return features
 
 if __name__ == '__main__':
