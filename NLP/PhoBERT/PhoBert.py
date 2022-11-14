@@ -13,7 +13,7 @@ class PhoBERT_class:
     self.stopwords = []
     self.v_phobert = None
     self.v_tokenizer = None
-  def load_stopwords(self, stopword_path):
+  def load_stopwords(self, stopword_path = "vietnamese_stopwords.txt"):
     self.stopwords = []
     with open(stopword_path, encoding='utf-8') as f:
         lines = f.readlines()
@@ -34,7 +34,7 @@ class PhoBERT_class:
     row = row.strip().lower()
     return row
 
-  def load_bert(self, path):
+  def load_bert(self, path = "vinai/phobert-base"):
     self.v_phobert = AutoModel.from_pretrained(path)
     self.v_tokenizer = AutoTokenizer.from_pretrained(path, use_fast=False)
   def make_bert_encode(self, line):
@@ -77,14 +77,11 @@ class PhoBERT_class:
     v_features = last_hidden_states[0][:, 0, :].numpy()
     # print(v_features.shape)
     return v_features
-
-def text2vec_PhoBERT(rows, stopwords = "vietnamese_stopwords.txt", model= "vinai/phobert-base"):
-  phobert_instance = PhoBERT_class()
-  phobert_instance.load_stopwords(stopwords)
-  phobert_instance.load_bert(model)
-  # Extract Features
-  features = phobert_instance.make_bert_features(rows)
-  return features
+  def text2vec_PhoBERT(self, rows):
+    self.load_stopwords()
+    self.load_bert()
+    features = self.make_bert_features(rows)
+    return features
 
 if __name__ == '__main__':
   # example text
@@ -93,8 +90,9 @@ if __name__ == '__main__':
           "Tôi thích bơi lội"
           ]
   # Gọi hàm text2Vec
-  features = text2vec_PhoBERT(rows = text, stopwords = "vietnamese_stopwords.txt", model= "vinai/phobert-base")
-  print(features)
+  instance_PB = PhoBERT_class()
+  features = instance_PB.text2vec_PhoBERT(text)
+  print(len(features[0]))
 
   # So sánh
   # from sklearn.metrics.pairwise import cosine_similarity
