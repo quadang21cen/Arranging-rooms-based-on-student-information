@@ -3,7 +3,7 @@ import torch
 import numpy
 import re
 import underthesea # Thư viện tách từ
-
+from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
 import unicodedata
 import warnings
@@ -41,14 +41,7 @@ class PhoBERT_class:
   def load_bert(self, path = "vinai/phobert-base"):
     self.v_phobert = AutoModel.from_pretrained(path)
     self.v_tokenizer = AutoTokenizer.from_pretrained(path, use_fast=False)
-  def check_Vietnamese(self, text):
-    firstLetter = "[A-EGHIK-VXYÂĐỔÔÚỨ]".normalize("NFC")
-    otherLetters = "[a-eghik-vxyàáâãèéêìíòóôõùúýỳỹỷỵựửữừứưụủũợởỡờớơộổỗồốọỏịỉĩệểễềếẹẻẽặẳẵằắăậẩẫầấạảđ₫]".normalize("NFC")
-    regexString = "^"
-    +firstLetter + otherLetters + "+\\s"
-    +"(" + firstLetter + otherLetters + "+\\s)*"
-    +firstLetter + otherLetters + "+$"
-    re.search(regexString, text)
+
   def make_bert_encode(self, line):
     # Phân thành từng từ
     line = underthesea.word_tokenize(line)
@@ -98,15 +91,18 @@ class PhoBERT_class:
 
 if __name__ == '__main__':
   # example text
-  text = ["abc def fafsfsfdsf Tôi thích đá bóng",
-          "Tôi thích đá banh",
-          "Tôi thích bơi lội"
+  text = ["Vẽ, coi phim, chơi game",
+          "Vẽ, đọc sách, chơi game",
+          "Hướng nội thích ở 1 mình, ko thích  đi chơi"
           ]
   # Gọi hàm text2Vec
   instance_PB = PhoBERT_class()
   features = instance_PB.text2vec_PhoBERT(text)
   print(len(features[0]))
-
+  similarity = cosine_similarity([features[0]], [features[1]])
+  print(similarity)
+  similarity = cosine_similarity([features[0]], [features[2]])
+  print(similarity)
   # So sánh
   # from sklearn.metrics.pairwise import cosine_similarity
   # import pandas as pd

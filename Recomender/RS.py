@@ -45,6 +45,9 @@ class RS:
         SIM_hi = self.corr_cosine(VEC_hi)
         res = (SIM_cp + SIM_fd + SIM_bp + SIM_hi)/4
 
+        #Refer roommate 
+        Vec_ref = self.BOW.text2vec(self.data["refer_roommate"])
+        Vec_all = self.BOW.text2vec((self.data["Bio_personality"] + self.data["hob_inter"]))
         return res
     def normalized(self,vec):
         min_max_scaler = preprocessing.MinMaxScaler()
