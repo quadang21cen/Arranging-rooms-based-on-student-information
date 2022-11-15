@@ -78,8 +78,6 @@ class VietTrie:
 words = []
 with open(os.path.join(os.path.dirname(__file__), "words.txt"), "r", encoding="utf8") as f:
   words = f.read().split("\n")
-  print(len(words))
-
 # a hack to make VietTrie singleton :)
 VietTrie = VietTrie()
 
@@ -89,16 +87,25 @@ for word in words:
 
 
 if __name__ == "__main__":
-  print(f"VietTrie.has_word(đàn bà) --> {VietTrie.has_word('đàn bà')}")
-  print(f"VietTrie.has_word(đàn ông) --> {VietTrie.has_word('đàn ông')}")
-  print(f"VietTrie.has_word(english) --> {VietTrie.has_word('english')}")
-  print(f"VietTrie.has_word(việt nam) --> {VietTrie.has_word('việt nam')}")
-  print(f"Extract words from this sentence: thiên nhiên Việt Nam rất là hùng vĩ -> {VietTrie.extract_words('thiên nhiên Việt Nam rất là hùng vĩ')}")
-  print(f"Extract words from this sentence: mày lúc nào cũng í a í ới nhức hết cả đầu -> {VietTrie.extract_words('mày lúc nào cũng í a í ới nhức hết cả đầu')}")
-  print(f"Extract words from this sentence: chạy chậm ì à ì ạch -> {VietTrie.extract_words('chạy chậm ì à ì ạch')}")
-  print(f"Extract words from this sentence: tôi tên là Hoàng Dũng -> {VietTrie.extract_words('tôi tên là Hoàng Dũng')}")
-  print(f"Extract words from this sentence: Tôi tên là Hoàng Dũng -> {VietTrie.extract_words('Tôi tên là Hoàng Dũng')}")
-  print(f"Extract words from this sentence: HSBC là ngân hàng -> {VietTrie.extract_words('HSBC là ngân hàng')}")
+
+  A = "fklajsclsa"
+  B = " xin chào "
+
+
+  print(VietTrie.has_word(B))
+
+
+
+  # print(f"VietTrie.has_word(đàn bà) --> {VietTrie.has_word('đàn bà')}")
+  # print(f"VietTrie.has_word(đàn ông) --> {VietTrie.has_word('đàn ông')}")
+  # print(f"VietTrie.has_word(english) --> {VietTrie.has_word('english')}")
+  # print(f"VietTrie.has_word(việt nam) --> {VietTrie.has_word('việt nam')}")
+  # print(f"Extract words from this sentence: thiên nhiên Việt Nam rất là hùng vĩ -> {VietTrie.extract_words('thiên nhiên Việt Nam rất là hùng vĩ')}")
+  # print(f"Extract words from this sentence: mày lúc nào cũng í a í ới nhức hết cả đầu -> {VietTrie.extract_words('mày lúc nào cũng í a í ới nhức hết cả đầu')}")
+  # print(f"Extract words from this sentence: chạy chậm ì à ì ạch -> {VietTrie.extract_words('chạy chậm ì à ì ạch')}")
+  # print(f"Extract words from this sentence: tôi tên là Hoàng Dũng -> {VietTrie.extract_words('tôi tên là Hoàng Dũng')}")
+  # print(f"Extract words from this sentence: Tôi tên là Hoàng Dũng -> {VietTrie.extract_words('Tôi tên là Hoàng Dũng')}")
+  # print(f"Extract words from this sentence: HSBC là ngân hàng -> {VietTrie.extract_words('HSBC là ngân hàng')}")
 
 
 
