@@ -3,7 +3,7 @@ import torch
 import numpy
 import re
 import underthesea # Thư viện tách từ
-
+from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
 import warnings
 warnings.filterwarnings('ignore')
@@ -85,15 +85,18 @@ class PhoBERT_class:
 
 if __name__ == '__main__':
   # example text
-  text = ["Tôi thích đá bóng",
-          "Tôi thích đá banh",
-          "Tôi thích bơi lội"
+  text = ["Vẽ, coi phim, chơi game",
+          "Vẽ, đọc sách, chơi game",
+          "Hướng nội thích ở 1 mình, ko thích  đi chơi"
           ]
   # Gọi hàm text2Vec
   instance_PB = PhoBERT_class()
   features = instance_PB.text2vec_PhoBERT(text)
   print(len(features[0]))
-
+  similarity = cosine_similarity([features[0]], [features[1]])
+  print(similarity)
+  similarity = cosine_similarity([features[0]], [features[2]])
+  print(similarity)
   # So sánh
   # from sklearn.metrics.pairwise import cosine_similarity
   # import pandas as pd
