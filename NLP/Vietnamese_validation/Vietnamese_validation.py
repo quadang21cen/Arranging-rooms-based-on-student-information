@@ -2,12 +2,12 @@ from viet_trie import VietTrie
 import underthesea
 
 sentence = 'Đồng Trống ABCDFG FGTGWAGSF Asgard Hạ Nội Con con'
-list_tokens = underthesea.word_tokenize(sentence)
-print(list_tokens)
+def split_words(text):
+    list_tokens = underthesea.word_tokenize(text)
+    words = []
+    for token in list_tokens:
+        if VietTrie.has_word(token.lower()):
+            print(token)
+            words.append(token)
 
-words = []
-for token in list_tokens:
-    if VietTrie.has_word(token.lower()):
-        print(token)
-        words.append(token)
-print(words)
+print(split_words(sentence))
