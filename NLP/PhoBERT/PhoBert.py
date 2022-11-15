@@ -5,6 +5,7 @@ import re
 import underthesea # Thư viện tách từ
 
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
+import unicodedata
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -13,7 +14,7 @@ class PhoBERT_class:
     self.stopwords = []
     self.v_phobert = None
     self.v_tokenizer = None
-  def load_stopwords(self, stopword_path = "NLP\\vietnamese_stopwords.txt"):
+  def load_stopwords(self, stopword_path = "vietnamese_stopwords.txt"):
     self.stopwords = []
     with open(stopword_path, encoding='utf-8') as f:
         lines = f.readlines()
@@ -24,6 +25,8 @@ class PhoBERT_class:
   def standardize_data(self, row):
     # Xóa dấu chấm, phẩy, hỏi ở cuối câu
     row = re.sub(r"[\.,\?]+$-", "", row)
+    # Xoa dau cach khong can thiet
+    row = re.sub(' +', ' ', row)
     # Xóa tất cả dấu chấm, phẩy, chấm phẩy, chấm thang, ... trong câu
     row = row.replace(",", " ").replace(".", " ") \
       .replace(";", " ").replace("“", " ") \
@@ -31,12 +34,21 @@ class PhoBERT_class:
       .replace('"', " ").replace("'", " ") \
       .replace("!", " ").replace("?", " ") \
       .replace("-", " ").replace("?", " ")
+
     row = row.strip().lower()
     return row
 
   def load_bert(self, path = "vinai/phobert-base"):
     self.v_phobert = AutoModel.from_pretrained(path)
     self.v_tokenizer = AutoTokenizer.from_pretrained(path, use_fast=False)
+  def check_Vietnamese(self, text):
+    firstLetter = "[A-EGHIK-VXYÂĐỔÔÚỨ]".normalize("NFC")
+    otherLetters = "[a-eghik-vxyàáâãèéêìíòóôõùúýỳỹỷỵựửữừứưụủũợởỡờớơộổỗồốọỏịỉĩệểễềếẹẻẽặẳẵằắăậẩẫầấạảđ₫]".normalize("NFC")
+    regexString = "^"
+    +firstLetter + otherLetters + "+\\s"
+    +"(" + firstLetter + otherLetters + "+\\s)*"
+    +firstLetter + otherLetters + "+$"
+    re.search(regexString, text)
   def make_bert_encode(self, line):
     # Phân thành từng từ
     line = underthesea.word_tokenize(line)
@@ -45,6 +57,7 @@ class PhoBERT_class:
     # Ghép lại thành câu như cũ sau khi lọc
     line = " ".join(filtered_sentence)
     line = underthesea.word_tokenize(line, format="text")
+    line = self.standardize_data(line)
     # print("Word segment  = ", line)
     # Tokenize bởi BERT
     encoded_line = self.v_tokenizer.encode(line)
@@ -55,7 +68,7 @@ class PhoBERT_class:
     for i_text in v_text:
       line = self.make_bert_encode(i_text)
       v_tokenized.append(line)
-
+    print(v_tokenized)
     # Chèn thêm số 1 vào cuối câu nếu như không đủ 100 từ
     padded = numpy.array([i + [1] * (max_len - len(i)) for i in v_tokenized])
     # print('padded:', padded[0])
@@ -85,7 +98,7 @@ class PhoBERT_class:
 
 if __name__ == '__main__':
   # example text
-  text = ["Tôi thích đá bóng",
+  text = ["abc def fafsfsfdsf Tôi thích đá bóng",
           "Tôi thích đá banh",
           "Tôi thích bơi lội"
           ]
