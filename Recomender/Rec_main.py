@@ -7,15 +7,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 from sklearn import preprocessing
 from Bag_Of_Words.Bag_of_Words_model import Bag_Of_Word
-
+from PhoBERT.PhoBert import PhoBERT
 class RS:
 
     def __init__(self) -> None:
         self.data = pd.read_csv('C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\student_data.csv')
         self.all_user = self.data.iloc[:,:1].to_numpy().flatten()
         self.SIM_matrix = pd.DataFrame(index=self.all_user,columns=self.all_user)
-        self.BOW = Bag_Of_Word()
-
+        # self.BOW = Bag_Of_Word()
+        self.Pho_BERT = PhoBERT()
+        
     def corr_cosine(self, util_matrix):
         return cosine_similarity(util_matrix,util_matrix)
 
@@ -33,20 +34,20 @@ class RS:
         SIM_cp = self.corr_cosine(VEC_cp)
 
         # food and drink
-        VEC_fd = self.BOW.text2vec(self.data["food_drink"])
+        VEC_fd = self.Pho_BERT.text2vec(self.data["food_drink"])
         SIM_fd = self.corr_cosine(VEC_fd)
         
         # Bio_personality
-        VEC_bp = self.BOW.text2vec(self.data["Bio_personality"])
+        VEC_bp = self.Pho_BERT.text2vec(self.data["Bio_personality"])
         SIM_bp = self.corr_cosine(VEC_bp)
         
         # hob_inter
-        VEC_hi = self.BOW.text2vec(self.data["hob_inter"])
+        VEC_hi = self.Pho_BERT.text2vec(self.data["hob_inter"])
         SIM_hi = self.corr_cosine(VEC_hi)
 
         #Refer roommate 
-        Vec_ref = self.BOW.text2vec(self.data["refer_roommate"])
-        Vec_all = self.BOW.text2vec((self.data["Bio_personality"] + self.data["hob_inter"]))
+        Vec_ref = self.Pho_BERT.text2vec(self.data["refer_roommate"])
+        Vec_all = self.Pho_BERT.text2vec((self.data["Bio_personality"] + self.data["hob_inter"]))
 
         res = (SIM_cp + SIM_fd + SIM_bp + SIM_hi)/4
         return res
@@ -56,6 +57,14 @@ class RS:
         
 
 if __name__ == "__main__":
+#     text = ["Vẽ, coi phim, chơi game",
+#             "Vẽ, đọc sách, chơi game",
+#             "Hướng nội thích ở 1 mình, ko thích  đi chơi"
+#             ]
+#   # Gọi hàm text2Vec
+#     instance_PB = PhoBERT()
+#     features = instance_PB.text2vec_PhoBERT(text)
+#     print(len(features[0]))
     RS = RS()
     res = RS.compute_all_corr()
     df_corr = RS.SIM_matrix = pd.DataFrame(data =res ,index=RS.all_user,columns=RS.all_user)
