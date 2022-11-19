@@ -28,13 +28,15 @@ class PhoBERT_class:
     # Xoa dau cach khong can thiet
     row = re.sub(' +', ' ', row)
     # Xóa tất cả dấu chấm, phẩy, chấm phẩy, chấm thang, ... trong câu
-    row = row.replace(",", " ").replace(".", " ") \
+    row = row.replace("http://", " ").replace("(", " ").replace("=", " ") \
+      .replace(",", " ").replace(".", " ") \
       .replace(";", " ").replace("“", " ") \
       .replace(":", " ").replace("”", " ") \
       .replace('"', " ").replace("'", " ") \
       .replace("!", " ").replace("?", " ") \
-      .replace("-", " ").replace("?", " ")
-
+      .replace("-", " ").replace("?", " ") \
+      .replace("/", " ")
+    row = re.sub(r"\s+", " ", row)  # Remove multiple spaces in content
     row = row.strip().lower()
     return row
 
