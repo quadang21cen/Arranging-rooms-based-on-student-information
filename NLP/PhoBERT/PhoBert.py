@@ -56,11 +56,8 @@ class PhoBERT_class:
     encoded_line = self.v_tokenizer.encode(line)
     return encoded_line
   def make_bert_features(self, v_text):
-    v_tokenized = []
     max_len = 100  # Mỗi câu dài tối đa 100 từ
-    for i_text in v_text:
-      line = self.make_bert_encode(i_text)
-      v_tokenized.append(line)
+    v_tokenized = [self.make_bert_encode(i_text) for i_text in v_text]
     print(v_tokenized)
     # Chèn thêm số 1 vào cuối câu nếu như không đủ 100 từ
     padded = numpy.array([i + [1] * (max_len - len(i)) for i in v_tokenized])

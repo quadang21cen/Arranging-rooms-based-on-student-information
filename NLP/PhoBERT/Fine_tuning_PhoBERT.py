@@ -104,7 +104,7 @@ def make_bert_features(v_text):
         )
     print(selection[:5])
     for i in range(inputs.input_ids.shape[0]):
-        inputs.input_ids[i, selection[i]] = 103
+        inputs.input_ids[i, selection[i]] = tokenizer.mask_token_id
     dataset = MeditationsDataset(inputs)
     loader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
