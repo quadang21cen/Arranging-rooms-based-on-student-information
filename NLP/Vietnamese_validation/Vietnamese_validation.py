@@ -14,7 +14,6 @@ def isMeaning(text):
     if num_not_mean/len(list_tokens) < 0.6:
         return True
     return False
-    
 if __name__ == "__main__":
     sentence = 'Đồng Trống Asgard Hạ Nội Con con'
     print(isMeaning(sentence))
