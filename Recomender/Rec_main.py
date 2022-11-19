@@ -6,69 +6,84 @@ from numpy.linalg import norm
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 from sklearn import preprocessing
-from Bag_Of_Words.Bag_of_Words_model import Bag_Of_Word
 from PhoBERT.PhoBert import PhoBERT
+from city2num import *
+from Vietnamese_validation.Vietnamese_validation import isMeaning
+
 class RS:
 
     def __init__(self) -> None:
-        self.data = pd.read_csv('C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\student_data.csv')
+        self.data = pd.read_csv('C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\student_ins.csv')
         self.all_user = self.data.iloc[:,:1].to_numpy().flatten()
         self.SIM_matrix = pd.DataFrame(index=self.all_user,columns=self.all_user)
-        # self.BOW = Bag_Of_Word()
         self.Pho_BERT = PhoBERT()
-        
+        self.trans_city = city2num()
+
     def corr_cosine(self, util_matrix):
         return cosine_similarity(util_matrix,util_matrix)
 
-    # def corr_euclidean(self, util_matrix):
-    #     SIM_matrix = pd.DataFrame(index=self.all_user,columns=self.all_user)
-    #     for i in range(0,util_matrix.__len__()):
-    #         for j in range(0,util_matrix.__len__()):
-    #             SIM_matrix.iloc[i][j] = np.linalg.norm(util_matrix.iloc[i,1:].to_numpy() - util_matrix.iloc[j,1:].to_numpy())
-    #     return SIM_matrix
+    def PhoB2vec(self,data):
+        vec = self.Pho_BERT.text2vec(data)
+        vec = self.normalized(vec)
+        return vec
+
+    # this function will check and if text input is not meanning on of this row will equal 1
+    def check_text(self, corr_matrix, list_text, set_value = 0.9):
+        for i, text in enumerate(list_text):
+            if isMeaning(text) == False:
+                corr_matrix[i,:] = set_value
+                corr_matrix[:,i] = set_value
+        return corr_matrix
+    
+    def city_distance(self,data):
+        corr_rs = []
+        for i in data:
+            row = []
+            for j in data:
+                row.append(abs(i - j))
+            corr_rs.append(row)
+        return corr_rs
 
     def compute_all_corr(self):
-        # Cleanliess and Privacy
-        VEC_cp = self.data[["Cleanliess","Privacy"]].to_numpy()
-        VEC_cp = self.normalized(VEC_cp)
-        SIM_cp = self.corr_cosine(VEC_cp)
+        list_city = self.data["Hometown"].tolist()
+        CORR_city = self.normalized(self.city_distance(self.trans_city.get_all(list_city)))
+        del list_city
 
-        # food and drink
-        VEC_fd = self.Pho_BERT.text2vec(self.data["food_drink"])
-        SIM_fd = self.corr_cosine(VEC_fd)
-        
         # Bio_personality
-        VEC_bp = self.Pho_BERT.text2vec(self.data["Bio_personality"])
-        SIM_bp = self.corr_cosine(VEC_bp)
-        
+        bio = self.data["Bio_personality"].to_list()
+        VEC_bio = self.Pho_BERT.text2vec(bio)
+        CORR_bio = self.check_text(self.corr_cosine(VEC_bio),bio) 
+        del VEC_bio, bio
+
         # hob_inter
-        VEC_hi = self.Pho_BERT.text2vec(self.data["hob_inter"])
-        SIM_hi = self.corr_cosine(VEC_hi)
+        hob = self.data["hob_inter"]
+        VEC_hob = self.Pho_BERT.text2vec(hob)
+        CORR_hob = self.check_text(self.corr_cosine(VEC_hob),hob)
+        del VEC_hob, hob
 
-        #Refer roommate 
-        Vec_ref = self.Pho_BERT.text2vec(self.data["refer_roommate"])
-        Vec_all = self.Pho_BERT.text2vec((self.data["Bio_personality"] + self.data["hob_inter"]))
+        #Refer roommate
+        ref = self.data["refer_roommate"]
+        Vec_ref = self.Pho_BERT.text2vec(ref)
+        CORR_Ref = self.check_text(self.corr_cosine(Vec_ref),ref)
+        del Vec_ref, ref
+        # Cleanliess and Privacy
+        VEC_cp = self.normalized(self.data[["Cleanliess","Privacy"]].to_numpy())
+        CORR_cp = self.corr_cosine(VEC_cp)
 
-        res = (SIM_cp + SIM_fd + SIM_bp + SIM_hi)/4
+        res = CORR_city*0.1 + CORR_bio*0.2 + CORR_hob*0.2 + CORR_Ref*0.2 + CORR_cp*0.3
         return res
+
     def normalized(self,vec):
         min_max_scaler = preprocessing.MinMaxScaler()
         return min_max_scaler.fit_transform(vec)
         
 
 if __name__ == "__main__":
-#     text = ["Vẽ, coi phim, chơi game",
-#             "Vẽ, đọc sách, chơi game",
-#             "Hướng nội thích ở 1 mình, ko thích  đi chơi"
-#             ]
-#   # Gọi hàm text2Vec
-#     instance_PB = PhoBERT()
-#     features = instance_PB.text2vec_PhoBERT(text)
-#     print(len(features[0]))
+
     RS = RS()
     res = RS.compute_all_corr()
     df_corr = RS.SIM_matrix = pd.DataFrame(data =res ,index=RS.all_user,columns=RS.all_user)
-    df_corr.to_csv("demo_rs.csv")
+    df_corr.to_csv("Corr_Matrix\\demo_rs.csv")
     print(res)
     print("FINISH")
 

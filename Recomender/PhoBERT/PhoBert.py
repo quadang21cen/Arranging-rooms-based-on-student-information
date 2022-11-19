@@ -93,16 +93,13 @@ if __name__ == '__main__':
   # example text
   text = ["Vẽ, coi phim, chơi game",
           "Vẽ, đọc sách, chơi game",
-          "Hướng nội thích ở 1 mình, ko thích  đi chơi"
+          "Hướng nội thích ở 1 mình, ko thích  đi chơi",
+          ''
           ]
   # Gọi hàm text2Vec
   instance_PB = PhoBERT()
-  features = instance_PB.text2vec_PhoBERT(text)
-  print(len(features[0]))
-  similarity = cosine_similarity([features[0]], [features[1]])
-  print(similarity)
-  similarity = cosine_similarity([features[0]], [features[2]])
-  print(similarity)
+  features = instance_PB.text2vec(text)
+
   # So sánh
   # from sklearn.metrics.pairwise import cosine_similarity
   # import pandas as pd
