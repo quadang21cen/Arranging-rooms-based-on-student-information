@@ -76,7 +76,7 @@ class VietTrie:
     tmp.is_word = True
 
 words = []
-with open(os.path.join(os.path.dirname(__file__), "words.txt"), "r", encoding="utf8") as f:
+with open(os.path.join(os.path.dirname(__file__), "outfile.txt"), "r", encoding="utf8") as f:
   words = f.read().split("\n")
 # a hack to make VietTrie singleton :)
 VietTrie = VietTrie()

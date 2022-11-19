@@ -30,7 +30,7 @@ def standardize_data(row):
         .replace(";", " ").replace("“", " ") \
         .replace(":", " ").replace("”", " ") \
         .replace('"', " ").replace("'", " ") \
-        .replace("!", " ").replace("?", " ") \
+0        .replace("!", " ").replace("?", " ") \
         .replace("-", " ").replace("?", " ")
     row = row.strip().lower()
     return row

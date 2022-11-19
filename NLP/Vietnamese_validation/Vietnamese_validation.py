@@ -1,8 +1,23 @@
 from viet_trie import VietTrie
 import underthesea
-
-
+import re
+def standardize_data(row):
+    # Xóa dấu chấm, phẩy, hỏi ở cuối câu
+    row = re.sub(r"[\.,\?]+$-", "", row)
+    # Xóa tất cả dấu chấm, phẩy, chấm phẩy, chấm thang, ... trong câu
+    row = row.replace("http://", " ").replace("(", " ").replace("=", " ") \
+      .replace(",", " ").replace(".", " ") \
+      .replace(";", " ").replace("“", " ") \
+      .replace(":", " ").replace("”", " ") \
+      .replace('"', " ").replace("'", " ") \
+      .replace("!", " ").replace("?", " ") \
+      .replace("-", " ").replace("?", " ") \
+      .replace("/", " ").replace(")", " ") \
+      .replace("+", " ").replace("%", " ")
+    row = row.strip().lower()
+    return row
 def isMeaning(text):
+    text = standardize_data(text)
     list_tokens = underthesea.word_tokenize(text)
     words = []
     num_not_mean = 0
