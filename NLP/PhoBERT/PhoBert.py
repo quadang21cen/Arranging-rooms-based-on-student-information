@@ -7,6 +7,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
 import unicodedata
 import warnings
+from transformers import pipeline
+
 warnings.filterwarnings('ignore')
 
 class PhoBERT_class:
@@ -14,7 +16,7 @@ class PhoBERT_class:
     self.stopwords = []
     self.v_phobert = None
     self.v_tokenizer = None
-  def load_stopwords(self, stopword_path = "NLP\\vietnamese_stopwords.txt"):
+  def load_stopwords(self, stopword_path = "vietnamese_stopwords.txt"):
     self.stopwords = []
     with open(stopword_path, encoding='utf-8') as f:
         lines = f.readlines()
@@ -82,9 +84,18 @@ class PhoBERT_class:
     with torch.no_grad():
       last_hidden_states = self.v_phobert(input_ids=padded, attention_mask=attention_mask)
 
-    v_features = last_hidden_states[0][:, 0, :].numpy()
+    #v_features = last_hidden_states[0][:, 0, :]
+    embeddings = last_hidden_states[0]
+    mask = attention_mask.unsqueeze(-1).expand(embeddings.size()).float()
+    masked_embeddings = embeddings * mask
+    summed = torch.sum(masked_embeddings, 1)
+    summed_mask = torch.clamp(mask.sum(1), min=1e-9)
+    mean_pooled = summed / summed_mask
+    # Turn torch array into numpy array
+    mean_pooled = mean_pooled.detach().numpy()
+    print(mean_pooled)
     # print(v_features.shape)
-    return v_features
+    return mean_pooled
   def text2vec_PhoBERT(self, rows):
     self.load_stopwords()
     self.load_bert()
