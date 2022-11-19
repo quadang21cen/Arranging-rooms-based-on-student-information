@@ -16,7 +16,7 @@ class PhoBERT_class:
     self.stopwords = []
     self.v_phobert = None
     self.v_tokenizer = None
-  def load_stopwords(self, stopword_path = "vietnamese_stopwords.txt"):
+  def load_stopwords(self, stopword_path = "NLP\\vietnamese_stopwords.txt"):
     self.stopwords = []
     with open(stopword_path, encoding='utf-8') as f:
         lines = f.readlines()
@@ -93,7 +93,7 @@ class PhoBERT_class:
     mean_pooled = summed / summed_mask
     # Turn torch array into numpy array
     mean_pooled = mean_pooled.detach().numpy()
-    print(mean_pooled)
+    #print(mean_pooled)
     # print(v_features.shape)
     return mean_pooled
   def text2vec_PhoBERT(self, rows):
