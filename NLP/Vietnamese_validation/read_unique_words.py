@@ -1,6 +1,7 @@
 import pandas as pd
 import underthesea
 import re
+from nltk.corpus import words
 file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
 print(file_pd.columns)
 def standardize_data(row):
@@ -52,8 +53,11 @@ data = my_file.read()
 
 data_into_list = data.split("\n")
 
-result = data_into_list + unique
+# Them vao tu tieng anh (dung luong lon)
+#result = data_into_list + unique + words.words()
 
+# Them vao nhung tu duoc tokenize boi underthesea
+result = data_into_list + unique
 result.sort()
 print(result)
 with open("outfile.txt", "w", encoding='utf-8') as outfile:
