@@ -41,8 +41,8 @@ final_tokens = tokens_bio + tokens_food + tokens_hobby
 
 unique = []
 for word in final_tokens:
-    if word not in unique:
-        unique.append(word)
+    if word.lower() not in unique:
+        unique.append(word.lower())
 #sort
 
 #print(unique)
