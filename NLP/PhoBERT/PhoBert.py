@@ -11,6 +11,16 @@ from transformers import pipeline
 
 warnings.filterwarnings('ignore')
 
+
+emoji_pattern = re.compile("["
+         u"\U0001F600-\U0001F64F"  # emoticons
+         u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+         u"\U0001F680-\U0001F6FF"  # transport & map symbols
+         u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+         u"\U00002702-\U000027B0"
+         u"\U000024C2-\U0001F251"
+         "]+", flags=re.UNICODE)
+
 class PhoBERT_class:
   def __init__(self):
     self.stopwords = []
@@ -26,24 +36,25 @@ class PhoBERT_class:
   def standardize_data(self, row):
     # Xóa dấu chấm, phẩy, hỏi ở cuối câu
     row = re.sub(r"[\.,\?]+$-", "", row)
-    # Xoa dau cach khong can thiet
-    row = re.sub(' +', ' ', row)
     # Xóa tất cả dấu chấm, phẩy, chấm phẩy, chấm thang, ... trong câu
-    row = row.replace("http://", " ").replace("(", " ").replace("=", " ") \
-      .replace(",", " ").replace(".", " ") \
-      .replace(";", " ").replace("“", " ") \
-      .replace(":", " ").replace("”", " ") \
-      .replace('"', " ").replace("'", " ") \
-      .replace("!", " ").replace("?", " ") \
-      .replace("-", " ").replace("?", " ") \
-      .replace("/", " ")
+    row = emoji_pattern.sub(r'', row)
+    row = row.replace("http://", " ").replace("<unk>", " ")
+    # row = row.replace("http://", " ").replace("(", " ").replace("=", " ")\
+    #     .replace(".", " ") \
+    #     .replace(";", ",").replace("“", " ") \
+    #     .replace(":", ",").replace("”", " ") \
+    #     .replace('"', ",").replace("'", " ") \
+    #     .replace("!", ",").replace("?", " ") \
+    #     .replace("-", ",").replace("?", " ") \
+    #     .replace("/", ",")
     row = re.sub(r"\s+", " ", row)  # Remove multiple spaces in content
+    row = underthesea.text_normalize(row)
     row = row.strip().lower()
     return row
 
-  def load_bert(self, path = "vinai/phobert-base"):
-    self.v_phobert = AutoModel.from_pretrained(path)
-    self.v_tokenizer = AutoTokenizer.from_pretrained(path, use_fast=False)
+  def load_bert(self, path = "NLP\\PhoBERT\\dung_NT_model_save\\"):
+    self.v_phobert = AutoModel.from_pretrained(path, from_tf=True)
+    self.v_tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
 
   def make_bert_encode(self, line):
     # Phân thành từng từ
@@ -103,6 +114,9 @@ class PhoBERT_class:
 
 if __name__ == '__main__':
   # example text
+  import time
+
+  start_time = time.time()
   text = ["Vẽ, coi phim, chơi game",
           "Vẽ, đọc sách, chơi game",
           "Hướng nội thích ở 1 mình, ko thích  đi chơi"
@@ -115,6 +129,7 @@ if __name__ == '__main__':
   print(similarity)
   similarity = cosine_similarity([features[0]], [features[2]])
   print(similarity)
+  print("--- %s seconds ---" % (time.time() - start_time))
   # So sánh
   # from sklearn.metrics.pairwise import cosine_similarity
   # import pandas as pd

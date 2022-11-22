@@ -1,189 +1,226 @@
-# Import các thư viện cần thiết
-import os
-import torch
-import numpy
+from transformers import TFAutoModelForMaskedLM
 import re
-import underthesea # Thư viện tách từ
-import numpy as np
+import emoji
+import underthesea
+import datasets
 
+def clean_text(corpus):
+    clean_corpus = []
+    for i in range(len(corpus)):
+        word = corpus[i].lower()
+        word = text_normalize(word)
+        word = re.sub(r"\s+", " ", word) # Remove multiple spaces in content
+        # remove punctuation
+        #word = re.sub('[^a-zA-Z]', ' ', word)
 
-from transformers import AutoTokenizer, AutoModelForMaskedLM, RobertaModel# Thư viện BERT
-from transformers import AdamW
-
-from tqdm import tqdm  # for our progress bar
-# So sánh
-from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
-
-# Hàm load model BERT
-def load_bert():
-    v_phobert = AutoModelForMaskedLM.from_pretrained("vinai/phobert-base")
-    v_tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
-    return v_phobert, v_tokenizer
-
+        # remove digits and special chars
+        word = re.sub("(\\d|\\W)+", " ", word)
+        clean_corpus.append(word)
+    return clean_corpus
 # Hàm chuẩn hoá câu
+emoji_pattern = re.compile("["
+         u"\U0001F600-\U0001F64F"  # emoticons
+         u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+         u"\U0001F680-\U0001F6FF"  # transport & map symbols
+         u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+         u"\U00002702-\U000027B0"
+         u"\U000024C2-\U0001F251"
+         "]+", flags=re.UNICODE)
 def standardize_data(row):
+    if not isinstance(row, str):
+        return "không"
     # Xóa dấu chấm, phẩy, hỏi ở cuối câu
     row = re.sub(r"[\.,\?]+$-", "", row)
     # Xóa tất cả dấu chấm, phẩy, chấm phẩy, chấm thang, ... trong câu
-    row = row.replace(",", " ").replace(".", " ") \
-        .replace(";", " ").replace("“", " ") \
-        .replace(":", " ").replace("”", " ") \
-        .replace('"', " ").replace("'", " ") \
-0        .replace("!", " ").replace("?", " ") \
-        .replace("-", " ").replace("?", " ")
+    row = emoji_pattern.sub(r'', row)
+    row = row.replace("http://", " ").replace("<unk>", " ")
+    # row = row.replace("http://", " ").replace("(", " ").replace("=", " ")\
+    #     .replace(".", " ") \
+    #     .replace(";", ",").replace("“", " ") \
+    #     .replace(":", ",").replace("”", " ") \
+    #     .replace('"', ",").replace("'", " ") \
+    #     .replace("!", ",").replace("?", " ") \
+    #     .replace("-", ",").replace("?", " ") \
+    #     .replace("/", ",")
+    row = re.sub(r"\s+", " ", row) # Remove multiple spaces in content
+    if row == "":
+        return "không"
+    row = underthesea.text_normalize(row)
     row = row.strip().lower()
     return row
+model_checkpoint = "vinai/phobert-base"
+model = TFAutoModelForMaskedLM.from_pretrained(model_checkpoint)
+# text = "http:// Tôi làm gì <mask>?"
+# print(standardize_data(text))
 
-# Hàm load danh sách các từ vô nghĩa: lắm, ạ, à, bị, vì..
-def load_stopwords():
-    sw = []
-    with open("vietnamese_stopwords.txt", encoding='utf-8') as f:
-        lines = f.readlines()
-    for line in lines:
-        sw.append(line.replace("\n",""))
-    return sw
+from transformers import AutoTokenizer
 
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+import pandas as pd
+file_pd = pd.read_csv("combined_csv.csv", encoding='utf-8')
+test_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+# file_text_pd = pd.DataFrame(file_pd.values.ravel('F'))
+# file_text_pd.columns = ["text"]
+file_pd = file_pd.stack().reset_index()
+file_pd.columns = ["level_0", "level_1", "text"]
 
-# Hàm load dữ liệu từ file data_1.csv để train model
-def load_data():
-    v_text = []
-    v_label = []
+test_pd = file_pd.stack().reset_index()
+test_pd.columns = ["level_0", "level_1", "text"]
 
-    with open('data_1.csv', encoding='utf-8') as f:
-        lines = f.readlines()
+file_pd['text_cleaned'] = list(map(lambda x:standardize_data(x),file_pd['text']))
+test_pd['text_cleaned'] = list(map(lambda x:standardize_data(x),test_pd['text']))
 
-    for line in lines:
-        line = line.replace("\n","")
-        print(line[:-2])
-        v_text.append(standardize_data(line[:-2]))
-        v_label.append(int(line[-1:].replace("\n", "")))
+file_pd["labels"] = file_pd['text_cleaned'].copy()
+test_pd["labels"] = test_pd['text_cleaned'].copy()
+def tokenize_function(examples):
+    result = tokenizer(examples["text_cleaned"])
+    if tokenizer.is_fast:
+        result["word_ids"] = [result.word_ids(i) for i in range(len(result["input_ids"]))]
+    return result
 
-    print(v_label)
-    return v_text, v_label
+tdf = pd.DataFrame({'text_cleaned': file_pd['text_cleaned'].tolist(), "labels":file_pd["labels"].tolist()})
+tds = datasets.Dataset.from_pandas(tdf)
 
+test_df = pd.DataFrame({'text_cleaned': test_pd['text_cleaned'].tolist(), "labels":test_pd["labels"].tolist()})
+test_df = datasets.Dataset.from_pandas(tdf)
+tds = datasets.DatasetDict({"train":tds, "test": test_df})
+tokenized_datasets = tds.map(
+    tokenize_function, batched=True, remove_columns=["text_cleaned", "labels"]
+)
+print(tokenized_datasets)
 
-class MeditationsDataset(torch.utils.data.Dataset):
-  def __init__(self, encodings):
-    self.encodings = encodings
+from transformers import DataCollatorForLanguageModeling
 
-  def __getitem__(self, idx):
-    return {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15, return_tensors="tf")
+data = [tokenized_datasets["train"][i] for i in range(len(tokenized_datasets["train"]))]
+# input_ids = [chunk for chunk in data_collator(data)["input_ids"]]
+# attention_masks  = tokenized_datasets["train"]["attention_mask"]
+tf_train_dataset = tokenized_datasets["train"].to_tf_dataset(
+    shuffle=True,
+    batch_size=32,
+    collate_fn=data_collator
+)
+tf_test_dataset = tokenized_datasets["test"].to_tf_dataset(
+    shuffle=True,
+    batch_size=32,
+    collate_fn=data_collator
+)
 
-  def __len__(self):
-    return len(self.encodings.input_ids)
+from transformers import create_optimizer, AdamWeightDecay
+from transformers.keras_callbacks import PushToHubCallback
+import tensorflow as tf
 
-# Hàm tạo ra bert features
-def make_bert_features(v_text):
-    global phobert, sw
-    v_tokenized = []
-    max_len = 100 # Mỗi câu dài tối đa 100 từ
-    text_list = []
-    for i_text in v_text:
-        print("Đang xử lý line = ", i_text)
-        # Phân thành từng từ
-        line = underthesea.word_tokenize(i_text)
-        # Lọc các từ vô nghĩa
-        filtered_sentence = [w for w in line if not w in sw]
-        # Ghép lại thành câu như cũ sau khi lọc
-        line = " ".join(filtered_sentence)
-        line = underthesea.word_tokenize(line, format="text")
-        # print("Word segment  = ", line)
-        # Tokenize bởi BERT
-        text_list.append(line)
-    print("Độ dài lớn nhất:", tokenizer.model_max_length)
-    inputs = tokenizer(text_list, return_tensors='pt', max_length=256, truncation=True, padding='max_length')
-    inputs['labels'] = inputs.input_ids.detach().clone()
-    print(inputs.keys())
-    rand = torch.rand(inputs.input_ids.shape)
-    mask_arr = (rand < 0.15) * (inputs.input_ids != 0) * (inputs.input_ids != 2) * (inputs.input_ids != 1)
-    selection = []
-    for i in range(inputs.input_ids.shape[0]):
-        selection.append(
-          torch.flatten(mask_arr[i].nonzero()).tolist()
-        )
-    print(selection[:5])
-    for i in range(inputs.input_ids.shape[0]):
-        inputs.input_ids[i, selection[i]] = tokenizer.mask_token_id
-    dataset = MeditationsDataset(inputs)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True)
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    # and move our model over to the selected device
-    phobert.to(device)
-    # activate training mode
-    phobert.train()
-
-    # initialize optimizer
-    optim = AdamW(phobert.parameters(), lr=5e-5)
-    outputs = None
-    epochs = 2
-
-    for epoch in range(epochs):
-      # setup loop with TQDM and dataloader
-      loop = tqdm(loader, leave=True)
-      for batch in loop:
-        # initialize calculated gradients (from prev step)
-        optim.zero_grad()
-        # pull all tensor batches required for training
-        input_ids = batch['input_ids'].to(device)
-        attention_mask = batch['attention_mask'].to(device)
-        labels = batch['labels'].to(device)
-        # process
-        outputs = phobert(input_ids, attention_mask=attention_mask,
-                        labels=labels)
-
-        # extract loss
-        loss = outputs.loss
-        # calculate loss for every parameter that needs grad update
-        loss.backward()
-        # update parameters
-        optim.step()
-        # print relevant info to progress bar
-        loop.set_description(f'Epoch {epoch}')
-        loop.set_postfix(loss=loss.item())
-    from transformers import TrainingArguments
-
-    args = TrainingArguments(
-      output_dir='out',
-      per_device_train_batch_size=16,
-      num_train_epochs=2
-    )
-    from transformers import Trainer
-
-    trainer = Trainer(
-      model=phobert,
-      args=args,
-      train_dataset=dataset
-    )
-    trainer.train()
-    trainer.save_model("Personal_PhoBERT")
+num_train_steps = len(tf_train_dataset)
+optimizer = AdamWeightDecay(lr=2e-5, weight_decay_rate=0.01)
 
 
-print("Chuẩn bị nạp danh sách các từ vô nghĩa (stopwords)...")
-sw = load_stopwords()
-print("Đã nạp xong danh sách các từ vô nghĩa")
+# Train in mixed-precision float16
+tf.keras.mixed_precision.set_global_policy("mixed_float16")
+model_name = model_checkpoint.split("/")[-1]
+push_to_hub_model_id = f"{model_name}-finetuned-vbert"
+callback = PushToHubCallback(
+    output_dir="./dung_NT_model_save", tokenizer=tokenizer
+)
+model.compile(optimizer=optimizer)
+history = model.fit(tf_train_dataset, validation_data=tf_test_dataset, epochs=3, callbacks=[callback])
 
-print("Chuẩn bị nạp model BERT....")
-phobert, tokenizer = load_bert()
-print("Đã nạp xong model BERT.")
+import math
+eval_results = model.evaluate(tf_test_dataset)
+print(f"Perplexity: {math.exp(eval_results):.2f}")
+from matplotlib import pyplot as plt
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.savefig('loss.png')
+# import numpy as np
+# import tensorflow as tf
 
-# print("Chuẩn bị load dữ liệu....")
-# text, label = load_data()
-# print("Đã load dữ liệu xong")
+# inputs = tokenizer(text, return_tensors="np")
+# token_logits = model(**inputs).logits
+# # Find the location of [MASK] and extract its logits
+# # print(inputs["input_ids"])
+# # print(tokenizer.mask_token_id)
+# # Mask number: 64000
+# mask_token_index = np.argwhere(inputs["input_ids"] == tokenizer.mask_token_id)[0, 1]
+# mask_token_logits = token_logits[0, mask_token_index, :]
+# # Pick the [MASK] candidates with the highest logits
+# # We negate the array before argsort to get the largest, not the smallest, logits
+# top_5_tokens = np.argsort(-mask_token_logits)[:5].tolist()
+#
+# for token in top_5_tokens:
+#     print(f">>> {text.replace(tokenizer.mask_token, tokenizer.decode([token]))}")
 
-text = ["tôi  thích bơi lội,nghe nhạc, và đọc sách",
-              "Toi thich da bong",
-              "Toi thich boi loi",
-              "Ban dang boi loi, nghe nhac",
-              "Tao thich nhay mua"
-              ]
-
-print("Chuẩn bị tạo features từ BERT.....")
-features = make_bert_features(text)
-print(features)
-print("Đã tạo xong features từ BERT")
-
-cosine_similarity = cosine_similarity(features, features)
-cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns=[*range(len(features))])
-print(cosine_similarity_pd)
-cosine_similarity_pd.to_csv("results.csv")
+# def tokenize_function(examples):
+#     result = tokenizer(examples[",food_drink"])
+#     #print(result)
+#     #print(tokenizer.is_fast)
+#     if tokenizer.is_fast:
+#         result["word_ids"] = [result.word_ids(i) for i in range(len(result["input_ids"]))]
+#     return result
+# import pandas as pd
+# filename = 'hobby_interests.csv'
+# data = pd.read_csv(filename, sep="\t", encoding='utf-8')
+# print(data.columns)
+# print(data)
+# from sklearn.model_selection import train_test_split
+# import datasets
+# train_test_data, unsupervised_data = train_test_split(data, test_size=0.5)
+# train_dataset, test_dataset= train_test_split(train_test_data, test_size=0.5)
+# train_dataset = datasets.Dataset.from_dict(train_dataset)
+# test_dataset = datasets.Dataset.from_dict(test_dataset)
+# unsupervised_dataset = datasets.Dataset.from_dict(unsupervised_data)
+# dd = datasets.DatasetDict({"train":train_dataset,"test":test_dataset, 'unsupervised':unsupervised_dataset})
+# print(dd)
+# # tokenized_datasets = tokenize_function(data[",food_drink"].to_list())
+# tokenized_datasets = dd.map(
+#     tokenize_function, batched=True, remove_columns = [",food_drink"]
+# )
+# print(tokenized_datasets)
+#
+# print(tokenizer.model_max_length)
+#
+# chunk_size = 56
+# # Slicing produces a list of lists for each feature
+# tokenized_samples = tokenized_datasets["train"][:20]
+#
+# for idx, sample in enumerate(tokenized_samples["input_ids"]):
+#     print(f"'>>> Review {idx} length: {len(sample)}'")
+#
+# concatenated_examples = {
+#     k: sum(tokenized_samples[k], []) for k in tokenized_samples.keys()
+# }
+# total_length = len(concatenated_examples["input_ids"])
+# print(f"'>>> Concatenated reviews length: {total_length}'")
+#
+# chunks = {
+#     k: [t[i : i + chunk_size] for i in range(0, total_length, chunk_size)]
+#     for k, t in concatenated_examples.items()
+# }
+#
+# for chunk in chunks["input_ids"]:
+#     print(f"'>>> Chunk length: {len(chunk)}'")
+#
+# def group_texts(examples):
+#     # Concatenate all texts
+#     concatenated_examples = {k: sum(examples[k], []) for k in examples.keys()}
+#     # Compute length of concatenated texts
+#     total_length = len(concatenated_examples[list(examples.keys())[0]])
+#     # We drop the last chunk if it's smaller than chunk_size
+#     total_length = (total_length // chunk_size) * chunk_size
+#     # Split by chunks of max_len
+#     result = {
+#         k: [t[i : i + chunk_size] for i in range(0, total_length, chunk_size)]
+#         for k, t in concatenated_examples.items()
+#     }
+#     # Create a new labels column
+#     result["labels"] = result["input_ids"].copy()
+#     return result
+#
+# # text_datasets = tokenized_datasets.map(group_texts, batched=True, batch_size=1,
+# #     num_proc=4)
+# # data_collator = DataCollatorForLanguageModeling(
+# #     tokenizer=tokenizer, mlm_probability=0.15, return_tensors="tf"
+# # )
