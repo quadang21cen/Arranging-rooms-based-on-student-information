@@ -59,19 +59,26 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 import pandas as pd
 file_pd = pd.read_csv("combined_csv.csv", encoding='utf-8')
 test_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+file_pd = file_pd[['Bio_personality', 'food_drink', 'hobby_interests']]
+test_pd = test_pd[['Bio_personality ( tính cách cá nhân )', 'food_drink (Đồ ăn thức uống)', 'hobby_interests (sở thích cá nhân)']]
+print(file_pd)
+print(test_pd)
 # file_text_pd = pd.DataFrame(file_pd.values.ravel('F'))
 # file_text_pd.columns = ["text"]
 file_pd = file_pd.stack().reset_index()
 file_pd.columns = ["level_0", "level_1", "text"]
-
-test_pd = file_pd.stack().reset_index()
+print(file_pd)
+test_pd = test_pd.stack().reset_index()
 test_pd.columns = ["level_0", "level_1", "text"]
+print(test_pd)
 
 file_pd['text_cleaned'] = list(map(lambda x:standardize_data(x),file_pd['text']))
 test_pd['text_cleaned'] = list(map(lambda x:standardize_data(x),test_pd['text']))
 
+
 file_pd["labels"] = file_pd['text_cleaned'].copy()
 test_pd["labels"] = test_pd['text_cleaned'].copy()
+print(len(test_pd['text_cleaned']))
 def tokenize_function(examples):
     result = tokenizer(examples["text_cleaned"])
     if tokenizer.is_fast:
@@ -82,7 +89,7 @@ tdf = pd.DataFrame({'text_cleaned': file_pd['text_cleaned'].tolist(), "labels":f
 tds = datasets.Dataset.from_pandas(tdf)
 
 test_df = pd.DataFrame({'text_cleaned': test_pd['text_cleaned'].tolist(), "labels":test_pd["labels"].tolist()})
-test_df = datasets.Dataset.from_pandas(tdf)
+test_df = datasets.Dataset.from_pandas(test_df)
 tds = datasets.DatasetDict({"train":tds, "test": test_df})
 tokenized_datasets = tds.map(
     tokenize_function, batched=True, remove_columns=["text_cleaned", "labels"]
@@ -119,7 +126,7 @@ tf.keras.mixed_precision.set_global_policy("mixed_float16")
 model_name = model_checkpoint.split("/")[-1]
 push_to_hub_model_id = f"{model_name}-finetuned-vbert"
 callback = PushToHubCallback(
-    output_dir="./dung_NT_model_save", tokenizer=tokenizer
+    output_dir="./RM_system_NLP_model", tokenizer=tokenizer
 )
 model.compile(optimizer=optimizer)
 history = model.fit(tf_train_dataset, validation_data=tf_test_dataset, epochs=3, callbacks=[callback])
@@ -127,6 +134,9 @@ history = model.fit(tf_train_dataset, validation_data=tf_test_dataset, epochs=3,
 import math
 eval_results = model.evaluate(tf_test_dataset)
 print(f"Perplexity: {math.exp(eval_results):.2f}")
+
+with open('Perplexity.txt', 'w') as f:
+    f.write(f"Perplexity of RM_system_NLP_model: {math.exp(eval_results):.2f}")
 from matplotlib import pyplot as plt
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
