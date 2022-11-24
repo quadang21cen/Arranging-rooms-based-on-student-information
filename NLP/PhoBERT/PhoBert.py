@@ -52,7 +52,7 @@ class PhoBERT_class:
     row = row.strip().lower()
     return row
 
-  def load_bert(self, path = "NLP\\PhoBERT\\RM_system_NLP_model\\"):
+  def load_bert(self, path = "NLP\\PhoBERT\\RM_system_not_mixed__NLP_model\\"):
     self.v_phobert = AutoModel.from_pretrained(path, from_tf=True)
     self.v_tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
 
@@ -119,16 +119,30 @@ if __name__ == '__main__':
   start_time = time.time()
   text = ["Vẽ, coi phim, chơi game",
           "Vẽ, đọc sách, chơi game",
-          "Hướng nội thích ở 1 mình, ko thích  đi chơi"
+          "Hướng nội thích ở 1 mình, ko thích  đi chơi",
+          "ko thích  đi chơi, Hướng nội thích ở 1 mình"
           ]
   # Gọi hàm text2Vec
   instance_PB = PhoBERT_class()
   features = instance_PB.text2vec_PhoBERT(text)
   print(len(features[0]))
+  similarity = cosine_similarity([features[0]], [features[0]])
+  print("(0,0):",similarity)
   similarity = cosine_similarity([features[0]], [features[1]])
-  print(similarity)
+  print("(0,1):",similarity)
   similarity = cosine_similarity([features[0]], [features[2]])
-  print(similarity)
+  print("(0,2):",similarity)
+  similarity = cosine_similarity([features[0]], [features[3]])
+  print("(0,3):",similarity)
+  similarity = cosine_similarity([features[1]], [features[2]])
+  print("(1,2):",similarity)
+  similarity = cosine_similarity([features[2]], [features[0]])
+  print("(2,0):",similarity)
+  similarity = cosine_similarity([features[2]], [features[1]])
+  print("(2,1):",similarity)
+  similarity = cosine_similarity([features[2]], [features[3]])
+  print("(2,3):",similarity)
+
   print("--- %s seconds ---" % (time.time() - start_time))
   # So sánh
   # from sklearn.metrics.pairwise import cosine_similarity

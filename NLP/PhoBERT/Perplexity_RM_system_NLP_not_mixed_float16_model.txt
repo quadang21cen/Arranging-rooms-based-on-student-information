@@ -1,0 +1,1 @@
+Perplexity of RM_system_NLP_not_mixed_float16_model: 17.76

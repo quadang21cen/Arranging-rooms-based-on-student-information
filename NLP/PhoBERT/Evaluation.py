@@ -106,7 +106,7 @@ tf_test_dataset = tokenized_datasets["test"].to_tf_dataset(
     collate_fn=data_collator
 )
 from transformers import create_optimizer, AdamWeightDecay
-test_model = TFAutoModelForMaskedLM.from_pretrained("dung_NT_model_save\\")
+test_model = TFAutoModelForMaskedLM.from_pretrained("RM_system_NLP_model\\")
 optimizer = AdamWeightDecay(lr=2e-5, weight_decay_rate=0.01)
 test_model.compile(optimizer=optimizer)
 import math

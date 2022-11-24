@@ -1,0 +1,1 @@
+CrossEntropy loss between the logits and labels
