@@ -107,7 +107,12 @@ tf_test_dataset = tokenized_datasets["test"].to_tf_dataset(
 )
 from transformers import create_optimizer, AdamWeightDecay
 test_model = TFAutoModelForMaskedLM.from_pretrained("RM_system_NLP_model\\")
-optimizer = AdamWeightDecay(lr=2e-5, weight_decay_rate=0.01)
+optimizer, schedule = create_optimizer(
+    init_lr=2e-5,
+    num_warmup_steps=1_000,
+    num_train_steps=num_train_steps,
+    weight_decay_rate=0.01,
+)
 test_model.compile(optimizer=optimizer)
 import math
 eval_results = test_model.evaluate(tf_test_dataset)
