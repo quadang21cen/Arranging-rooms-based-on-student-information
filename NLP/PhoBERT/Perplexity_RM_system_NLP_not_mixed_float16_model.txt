@@ -1,1 +1,2 @@
 Perplexity of RM_system_NLP_not_mixed_float16_model: 17.76
+Perplexity when using evaluation.py: 14.10; 14.90; 14.70
