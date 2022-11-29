@@ -30,7 +30,7 @@ class VietTrie:
     tmp.is_word = True
 
 words = []
-with open(os.path.join(os.path.dirname(__file__), "words.txt"), "r", encoding="utf8") as f:
+with open(os.path.join(os.path.dirname(__file__), "outfile.txt"), "r", encoding="utf8") as f:
   words = f.read().split("\n")
 # a hack to make VietTrie singleton :)
 VietTrie = VietTrie()
@@ -55,7 +55,7 @@ def isMeaning(text):
 
 if __name__ == "__main__":
 
-  sentence = 'Đồng Trống Asgard Hạ Nội Con con'
+  sentence = 'skfjal dkljasskdsj asewj kdjdk'
   print(isMeaning(sentence))
 
 
