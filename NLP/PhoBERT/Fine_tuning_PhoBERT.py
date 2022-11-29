@@ -1,22 +1,8 @@
 from transformers import TFAutoModelForMaskedLM
 import re
-import emoji
 import underthesea
 import datasets
 
-def clean_text(corpus):
-    clean_corpus = []
-    for i in range(len(corpus)):
-        word = corpus[i].lower()
-        word = text_normalize(word)
-        word = re.sub(r"\s+", " ", word) # Remove multiple spaces in content
-        # remove punctuation
-        #word = re.sub('[^a-zA-Z]', ' ', word)
-
-        # remove digits and special chars
-        word = re.sub("(\\d|\\W)+", " ", word)
-        clean_corpus.append(word)
-    return clean_corpus
 # Hàm chuẩn hoá câu
 emoji_pattern = re.compile("["
          u"\U0001F600-\U0001F64F"  # emoticons
@@ -58,20 +44,33 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 import pandas as pd
 file_pd = pd.read_csv("combined_csv.csv", encoding='utf-8')
-test_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+vaild_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
+file_pd = file_pd[['Bio_personality', 'food_drink', 'hobby_interests']]
+from sklearn.model_selection import train_test_split
+file_pd, test_pd = train_test_split(file_pd, test_size=0.4)
+vaild_pd = vaild_pd[['Bio_personality ( tính cách cá nhân )', 'food_drink (Đồ ăn thức uống)', 'hobby_interests (sở thích cá nhân)']]
+print(file_pd)
+print(test_pd)
 # file_text_pd = pd.DataFrame(file_pd.values.ravel('F'))
 # file_text_pd.columns = ["text"]
 file_pd = file_pd.stack().reset_index()
 file_pd.columns = ["level_0", "level_1", "text"]
-
-test_pd = file_pd.stack().reset_index()
+print(file_pd)
+test_pd = test_pd.stack().reset_index()
 test_pd.columns = ["level_0", "level_1", "text"]
+print(test_pd)
+vaild_pd = vaild_pd.stack().reset_index()
+vaild_pd.columns = ["level_0", "level_1", "text"]
 
 file_pd['text_cleaned'] = list(map(lambda x:standardize_data(x),file_pd['text']))
 test_pd['text_cleaned'] = list(map(lambda x:standardize_data(x),test_pd['text']))
+vaild_pd['text_cleaned'] = list(map(lambda x:standardize_data(x),vaild_pd['text']))
+
 
 file_pd["labels"] = file_pd['text_cleaned'].copy()
 test_pd["labels"] = test_pd['text_cleaned'].copy()
+vaild_pd["labels"] = vaild_pd['text_cleaned'].copy()
+print(len(test_pd['text_cleaned']))
 def tokenize_function(examples):
     result = tokenizer(examples["text_cleaned"])
     if tokenizer.is_fast:
@@ -82,8 +81,11 @@ tdf = pd.DataFrame({'text_cleaned': file_pd['text_cleaned'].tolist(), "labels":f
 tds = datasets.Dataset.from_pandas(tdf)
 
 test_df = pd.DataFrame({'text_cleaned': test_pd['text_cleaned'].tolist(), "labels":test_pd["labels"].tolist()})
-test_df = datasets.Dataset.from_pandas(tdf)
-tds = datasets.DatasetDict({"train":tds, "test": test_df})
+test_df = datasets.Dataset.from_pandas(test_df)
+
+valid_df = pd.DataFrame({'text_cleaned': vaild_pd['text_cleaned'].tolist(), "labels":vaild_pd["labels"].tolist()})
+valid_df = datasets.Dataset.from_pandas(valid_df)
+tds = datasets.DatasetDict({"train":tds, "test": test_df, "valid": valid_df})
 tokenized_datasets = tds.map(
     tokenize_function, batched=True, remove_columns=["text_cleaned", "labels"]
 )
@@ -105,28 +107,40 @@ tf_test_dataset = tokenized_datasets["test"].to_tf_dataset(
     batch_size=32,
     collate_fn=data_collator
 )
-
-from transformers import create_optimizer, AdamWeightDecay
+tf_valid_dataset = tokenized_datasets["valid"].to_tf_dataset(
+    shuffle=True,
+    batch_size=32,
+    collate_fn=data_collator
+)
+from transformers import create_optimizer
 from transformers.keras_callbacks import PushToHubCallback
 import tensorflow as tf
 
 num_train_steps = len(tf_train_dataset)
-optimizer = AdamWeightDecay(lr=2e-5, weight_decay_rate=0.01)
-
+# optimizer = AdamWeightDecay(lr=2e-5, weight_decay_rate=0.01)
+optimizer, schedule = create_optimizer(
+    init_lr=2e-5,
+    num_warmup_steps=1_000,
+    num_train_steps=num_train_steps,
+    weight_decay_rate=0.01,
+)
 
 # Train in mixed-precision float16
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 model_name = model_checkpoint.split("/")[-1]
 push_to_hub_model_id = f"{model_name}-finetuned-vbert"
 callback = PushToHubCallback(
-    output_dir="./dung_NT_model_save", tokenizer=tokenizer
+    output_dir="./RM_system_not_mixed__NLP_model", tokenizer=tokenizer
 )
 model.compile(optimizer=optimizer)
-history = model.fit(tf_train_dataset, validation_data=tf_test_dataset, epochs=3, callbacks=[callback])
+history = model.fit(tf_train_dataset, validation_data=tf_test_dataset, epochs=20, callbacks=[callback])
 
 import math
-eval_results = model.evaluate(tf_test_dataset)
+eval_results = model.evaluate(tf_valid_dataset)
 print(f"Perplexity: {math.exp(eval_results):.2f}")
+
+with open('Perplexity.txt', 'w') as f:
+    f.write(f"Perplexity of RM_system_NLP_not_mixed_float16_model: {math.exp(eval_results):.2f}")
 from matplotlib import pyplot as plt
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -134,7 +148,7 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
-plt.savefig('loss.png')
+plt.savefig('loss_not_mixed_float16.png')
 # import numpy as np
 # import tensorflow as tf
 
