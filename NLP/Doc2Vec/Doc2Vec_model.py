@@ -24,7 +24,7 @@ warnings.filterwarnings('ignore')
 def clean_text(corpus):
     clean_corpus = []
     for i in range(len(corpus)):
-        word = corpus[i].lower()
+        word = str(corpus[i]).lower()
         word = text_normalize(word)
         word = re.sub(r"\s+", " ", word) # Remove multiple spaces in content
         # remove punctuation
