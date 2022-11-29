@@ -67,11 +67,15 @@
 #Thêm thư viện tkinter
 from tkinter import *
 import tkinter.font as tkFont
+import customtkinter
+
+customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
+customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 
 
 #Tạo một cửa sổ mới
-window = Tk()
+window = customtkinter.CTk()
 window.title('Demo')
 window.geometry('700x700')
 
@@ -80,36 +84,36 @@ def clicked():
     lbl.configure(text="Button was clicked !!")
 
 #Tạo một Textbox
-txt = Entry(window)
+txt = customtkinter.CTkEntry(window)
 #Vị trí xuất hiện của Textbox
 txt.grid(column=1, row=0)
 txt.focus()
 
 
 #Thêm label có nội dung Hello, font chữ
-lbl = Label(window, text="Text:")
+lbl = customtkinter.CTkLabel(window, text="Text:")
 lbl.grid(column=0, row=0)
 
 #Thêm label có nội dung Hello, font chữ
-lbl = Label(window, text="Cleaness and Privacy:")
+lbl = customtkinter.CTkLabel(window, text="Cleaness and Privacy:")
 lbl.grid(column=0, row=1)
 #Tạo một Textbox
-txt = Entry(window)
+txt = customtkinter.CTkEntry(window)
 #Vị trí xuất hiện của Textbox
 txt.grid(column=1, row=1)
 txt.focus()
 
-lbl = Label(window, text="Cleaness and Privacy:")
+lbl = customtkinter.CTkLabel(window, text="Cleaness and Privacy:")
 lbl.grid(column=0, row=1)
 #Tạo một Textbox
-txt = Entry(window)
+txt = customtkinter.CTkEntry(window)
 #Vị trí xuất hiện của Textbox
 txt.grid(column=1, row=1)
 txt.focus()
 
 #Thêm một nút nhấn Click Me
 
-btn = Button(window, text="Choose File", bg="orange", fg="red", command=clicked)
+btn = customtkinter.CTkButton(window, text="Choose File", bg="orange", command=clicked)
 btn.grid(column=1, row=3)
 
 #Đặt kích thước của cửa sổ
@@ -117,9 +121,6 @@ btn.grid(column=1, row=3)
 #Lặp vô tận để hiển thị cửa sổ
 window.mainloop()
 
-<<<<<<< HEAD
-
-=======
 # import tkinter as tk
 # import tkinter.font as tkFont
 #
@@ -170,4 +171,3 @@ window.mainloop()
 #     root = tk.Tk()
 #     app = App(root)
 #     root.mainloop()
->>>>>>> f132ffdbd641f0f917059d03f956bd00818e3294
