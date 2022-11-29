@@ -110,11 +110,32 @@ txt = customtkinter.CTkEntry(window)
 #Vị trí xuất hiện của Textbox
 txt.grid(column=1, row=1)
 txt.focus()
+res = "Empty"
+def viewSelected(value):
+    global res
+    print(value)
+    if value <= 1.5:
+      res = "Red"
+    elif value <= 2.5:
+       res =  "Green"
+    elif value <= 3:
+       res =  "Blue"
+    else:
+        res = "Invalid option"
+    lbl2.configure(text=res)
+
+lbl2 = customtkinter.CTkLabel(window, text=str(res))
+lbl2.grid(column=0, row=2)
+tn = customtkinter.CTkSlider(window, orient='horizontal', from_=1, to=3, command=viewSelected)
+tn.grid(column=1, row=2)
+tn.focus()
+#print(res)
 
 #Thêm một nút nhấn Click Me
 
 btn = customtkinter.CTkButton(window, text="Choose File", bg="orange", command=clicked)
 btn.grid(column=1, row=3)
+
 
 #Đặt kích thước của cửa sổ
 
