@@ -33,7 +33,7 @@ class App(customtkinter.CTk):
                                             corner_radius=0)
         self.frame.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
-        self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=250, corner_radius=15,
+        self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=270, corner_radius=15,
                                               fg_color=("white", "gray38"), )
         self.frame_0.place(relx=0.5, rely=0.4, anchor=tkinter.CENTER)
         self.frame_0.grid_columnconfigure(0, weight=1)
@@ -83,19 +83,64 @@ class App(customtkinter.CTk):
                                                   text="Gender Separation?")
         self.genderLabel.place(relx=0.6, rely=0.55, anchor=tkinter.CENTER)
 
-        self.gender_switch = customtkinter.CTkSwitch(master=self.frame_0, text="Yes/No")
+        self.gender_switch = customtkinter.CTkSwitch(master=self.frame_0, text="No/Yes")
         self.gender_switch.place(relx=0.8, rely=0.55, anchor=tkinter.W)
+
+        self.roomLabel = customtkinter.CTkLabel(master=self.frame_0,
+                                                    text="Number of people", width=50)
+        self.roomLabel.place(relx=0.17, rely=0.75, anchor=tkinter.E)
+
+        self.radio_var = tkinter.IntVar(value=0)
+        self.room2Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                           variable=self.radio_var,
+                                                           value=2, text = "2")
+        self.room2Radio.place(relx=0.27, rely=0.75, anchor=tkinter.E)
+
+        self.room3Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                      variable=self.radio_var,
+                                                      value=3, text="3")
+        self.room3Radio.place(relx=0.37, rely=0.75, anchor=tkinter.E)
+
+        self.room4Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                       variable=self.radio_var,
+                                                       value=4, text="4")
+        self.room4Radio.place(relx=0.47, rely=0.75, anchor=tkinter.E)
+
+        self.room5Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                       variable=self.radio_var,
+                                                       value=5, text="5")
+        self.room5Radio.place(relx=0.57, rely=0.75, anchor=tkinter.E)
+
+        self.room6Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                       variable=self.radio_var,
+                                                       value=6, text="6")
+        self.room6Radio.place(relx=0.67, rely=0.75, anchor=tkinter.E)
+
+        self.room7Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                       variable=self.radio_var,
+                                                       value=7, text="7")
+        self.room7Radio.place(relx=0.77, rely=0.75, anchor=tkinter.E)
+
+        self.room8Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                       variable=self.radio_var,
+                                                       value=8, text="8")
+        self.room8Radio.place(relx=0.87, rely=0.75, anchor=tkinter.E)
+
+        self.room9Radio = customtkinter.CTkRadioButton(master=self.frame_0,
+                                                       variable=self.radio_var,
+                                                       value=9, text="9")
+        self.room9Radio.place(relx=0.97, rely=0.75, anchor=tkinter.E)
 
 
         self.sliderLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Constrast",width=50)
-        self.sliderLabel.place(relx=0.1, rely=0.75, anchor=tkinter.E)
+        self.sliderLabel.place(relx=0.1, rely=0.88, anchor=tkinter.E)
 
         self.slider_value = 0
-        self.slider_contrast = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 400)
-        self.slider_contrast.place(relx=0.5, rely=0.75, anchor=tkinter.CENTER)
+        self.slider_contrast = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 500)
+        self.slider_contrast.place(relx=0.55, rely=0.88, anchor=tkinter.CENTER)
 
-        self.progressbar = customtkinter.CTkProgressBar(master=self.frame)
+        self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550)
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
 
         self.frame_1 = customtkinter.CTkFrame(master=self.frame, width=250, height=50, corner_radius=15, fg_color=("white", "gray38"),)
@@ -147,6 +192,7 @@ class App(customtkinter.CTk):
         cleanliness_privacy_value = self.cleanliness_privacy_entry.get()
         gender_switch_value = self.gender_switch.get()
         contrast_value = self.slider_contrast.get()
+        num_people_value = self.radio_var.get()
         print("start running")
     def fun_BT3(self):
         print("start running")
