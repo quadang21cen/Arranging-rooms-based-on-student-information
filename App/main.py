@@ -134,14 +134,13 @@ class App(customtkinter.CTk):
         self.geometry("720x500")
         self.title("CustomTkinter example_button_images.py")
 
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1, minsize=200)
 
         self.frame_1 = customtkinter.CTkFrame(master=self, width=250, height=240, corner_radius=15)
-        self.frame_1.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
+        self.frame_1.grid(row=3, column=0, padx=20, pady=20, sticky="nsew")
         self.frame_1.grid_columnconfigure(0, weight=1)
-        self.frame_1.grid_columnconfigure(1, weight=1)
-
+   
         self.settings_image = self.load_image("/test_images/settings.png", 20)
         self.save_image = self.load_image("/test_images/save.png", 20)
         self.bell_image = self.load_image("/test_images/bell.png", 20)
@@ -155,7 +154,7 @@ class App(customtkinter.CTk):
         entry_1 = customtkinter.CTkEntry(placeholder_text="CTkEntry")
         # entry_1.pack(pady=12, padx=10)
         # entry_1.grid(row=0, column=0,columnspan=1, padx=20, pady=(20, 10))
-        entry_1.grid(row=8, column=0, columnspan=2, pady=20, padx=20, sticky="we")
+        entry_1.grid(row=0, column=0, columnspan=2, pady=20, padx=20, sticky="we")
 
         self.button_1 = customtkinter.CTkButton(master=self.frame_1, image=self.add_folder_image, text="Add Folder", height=32,
                                                 compound="right", command=self.fun_BT1)

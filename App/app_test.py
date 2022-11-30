@@ -22,9 +22,6 @@ class App(customtkinter.CTk):
 
         self.title(App.APP_NAME)
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
-        self.minsize(App.WIDTH, App.HEIGHT)
-        self.maxsize(App.WIDTH, App.HEIGHT)
-        self.resizable(False, False)
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.full = False
