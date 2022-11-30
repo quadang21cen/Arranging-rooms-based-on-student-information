@@ -28,12 +28,12 @@ class App(customtkinter.CTk):
 
 
         self.frame = customtkinter.CTkFrame(master=self,
-                                            width=700,
+                                            width=App.WIDTH,
                                             height=App.HEIGHT,
                                             corner_radius=0)
         self.frame.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
-        self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=250, corner_radius=0,
+        self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=250, corner_radius=15,
                                               fg_color=("white", "gray38"), )
         self.frame_0.place(relx=0.5, rely=0.4, anchor=tkinter.CENTER)
         self.frame_0.grid_columnconfigure(0, weight=1)
@@ -45,60 +45,60 @@ class App(customtkinter.CTk):
 
         self.hobbyLabel = customtkinter.CTkLabel(master=self.frame_0,
                                               text="Hobby",width=50)
-        self.hobbyLabel.place(relx=0.1, rely=0.3, anchor=tkinter.E)
+        self.hobbyLabel.place(relx=0.1, rely=0.15, anchor=tkinter.E)
 
         self.hobbyentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
-        self.hobbyentry.place(relx=0.2, rely=0.3, anchor=tkinter.CENTER)
+        self.hobbyentry.place(relx=0.27, rely=0.15, anchor=tkinter.CENTER)
 
         self.hometownLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                  text="Hometown", width=50)
-        self.hometownLabel.place(relx=0.6, rely=0.3, anchor=tkinter.CENTER)
+        self.hometownLabel.place(relx=0.6, rely=0.15, anchor=tkinter.CENTER)
 
         self.hometownentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
-        self.hometownentry.place(relx=0.8, rely=0.3, anchor=tkinter.W)
+        self.hometownentry.place(relx=0.8, rely=0.15, anchor=tkinter.W)
 
 
         self.cleanliness_privacyLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Cleaniness and Privacy")
-        self.cleanliness_privacyLabel.place(relx=0.6, rely=0.5, anchor=tkinter.CENTER)
+        self.cleanliness_privacyLabel.place(relx=0.6, rely=0.35, anchor=tkinter.CENTER)
 
         self.cleanliness_privacy_entry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
-        self.cleanliness_privacy_entry.place(relx=0.8, rely=0.5, anchor=tkinter.W)
+        self.cleanliness_privacy_entry.place(relx=0.8, rely=0.35, anchor=tkinter.W)
 
         self.foodLabel = customtkinter.CTkLabel(master=self.frame_0,
                                               text="food",width=50)
-        self.foodLabel.place(relx=0.1, rely=0.5, anchor=tkinter.E)
+        self.foodLabel.place(relx=0.1, rely=0.35, anchor=tkinter.E)
 
         self.foodentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
-        self.foodentry.place(relx=0.2, rely=0.5, anchor=tkinter.CENTER)
+        self.foodentry.place(relx=0.27, rely=0.35, anchor=tkinter.CENTER)
 
         self.personalityLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                    text="Personality",width=50)
-        self.personalityLabel.place(relx=0.1, rely=0.7, anchor=tkinter.E)
+        self.personalityLabel.place(relx=0.115, rely=0.55, anchor=tkinter.E)
 
         self.personalityentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
-        self.personalityentry.place(relx=0.2, rely=0.7, anchor=tkinter.CENTER)
+        self.personalityentry.place(relx=0.27, rely=0.55, anchor=tkinter.CENTER)
 
         self.genderLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Gender Separation?")
-        self.genderLabel.place(relx=0.6, rely=0.7, anchor=tkinter.CENTER)
+        self.genderLabel.place(relx=0.6, rely=0.55, anchor=tkinter.CENTER)
 
         self.gender_switch = customtkinter.CTkSwitch(master=self.frame_0, text="Yes/No")
-        self.gender_switch.place(relx=0.8, rely=0.7, anchor=tkinter.W)
+        self.gender_switch.place(relx=0.8, rely=0.55, anchor=tkinter.W)
 
 
         self.sliderLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Constrast",width=50)
-        self.sliderLabel.place(relx=0.1, rely=0.9, anchor=tkinter.E)
+        self.sliderLabel.place(relx=0.1, rely=0.75, anchor=tkinter.E)
 
         self.slider_value = 0
-        self.slider1 = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 400)
-        self.slider1.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
+        self.slider_contrast = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 400)
+        self.slider_contrast.place(relx=0.5, rely=0.75, anchor=tkinter.CENTER)
 
         self.progressbar = customtkinter.CTkProgressBar(master=self.frame)
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
 
-        self.frame_1 = customtkinter.CTkFrame(master=self.frame, width=250, height=50, corner_radius=0, fg_color=("white", "gray38"),)
+        self.frame_1 = customtkinter.CTkFrame(master=self.frame, width=250, height=50, corner_radius=15, fg_color=("white", "gray38"),)
         self.frame_1.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
         self.frame_1.grid_columnconfigure(0, weight=1)
         self.frame_1.grid_columnconfigure(1, weight=1)
@@ -150,6 +150,9 @@ class App(customtkinter.CTk):
 
     def button_event(self):
         print("Login pressed - username:", self.entry_1.get(), "password:", self.entry_2.get())
+
+    def on_change(e):
+        print(e.widget.get())
     def load_image(self, path, image_size):
         """ load rectangular image with path relative to PATH """
         return ImageTk.PhotoImage(Image.open(PATH + path).resize((image_size, image_size)))
@@ -157,6 +160,13 @@ class App(customtkinter.CTk):
         filename = fd.askopenfilename()
         print("button pressed")
     def fun_BT2(self):
+        hobby_value = self.hobbyentry.get()
+        food_value = self.foodentry.get()
+        personality_value = self.personalityentry.get()
+        hometown_value = self.hometownentry.get()
+        cleanliness_privacy_value = self.cleanliness_privacy_entry.get()
+        gender_switch_value = self.gender_switch.get()
+        contrast_value = self.slider_contrast.get()
         print("start running")
     def fun_BT3(self):
         print("start running")
