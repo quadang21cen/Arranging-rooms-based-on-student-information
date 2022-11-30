@@ -137,8 +137,8 @@ class App(customtkinter.CTk):
         self.sliderLabel.place(relx=0.1, rely=0.88, anchor=tkinter.E)
 
         self.slider_value = 0
-        self.slider_contrast = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 400)
-        self.slider_contrast.place(relx=0.5, rely=0.88, anchor=tkinter.CENTER)
+        self.slider_contrast = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 500)
+        self.slider_contrast.place(relx=0.55, rely=0.88, anchor=tkinter.CENTER)
 
         self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550)
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
