@@ -1,12 +1,9 @@
 import pandas as pd
 import scipy.cluster.hierarchy as spc
 import numpy as np
-def find_corr(csv_path, limit):
-    df = pd.read_csv(csv_path)
-    #df = pd.DataFrame(my_data)
-    columns = df.columns.tolist()
-    #print(columns)
-    columns.pop(0)
+def find_corr(limit, columns, lists):
+    df = pd.DataFrame(lists,
+                      columns=['Name', 'val'])
 
     results = dict()
     print(len(columns))
@@ -23,6 +20,9 @@ def find_corr(csv_path, limit):
         else:
             results[str(columns[k])] = temp_list
     return results
-results = find_corr("demo_rs.csv", limit=0.7)
-print(results["Nguyễn Tiến Dũng"])
-print(len(results["Lê Phước Toàn"]))
+columns =['Name', 'val']
+lst = [1, 2, 3, 4, 5, 6, 7]
+lst2 = [11, 22, 33, 44, 55, 66, 77]
+results = find_corr(limit=0.7, columns=columns, lists=list(zip(lst, lst2)))
+print(results['Name'])
+print(len(results['Name']))
