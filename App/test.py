@@ -7,7 +7,7 @@ from tkinter import filedialog as fd
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
-
+from tkinter import messagebox
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -139,6 +139,7 @@ class App(customtkinter.CTk):
         filename = fd.askopenfilename()
         print("button pressed")
     def fun_BT2(self):
+        messagebox.showerror('Python Error', 'Error: This is an Error Message!')
         hobby_value = self.hobbyentry.get()
         food_value = self.foodentry.get()
         personality_value = self.personalityentry.get()

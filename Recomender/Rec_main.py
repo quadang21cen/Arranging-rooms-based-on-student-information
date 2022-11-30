@@ -15,7 +15,7 @@ class RS:
     def __init__(self) -> None:
         self.data = pd.read_csv('C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\student_ins.csv')
         self.all_user = self.data.iloc[:,:1].to_numpy().flatten()
-        self.SIM_matrix = pd.DataFrame(index=self.all_user,columns=self.all_user)
+        self.SIM_matrix = pd.DataFrame(index=self.data.index,columns=self.data.index)
         self.Pho_BERT = PhoBERT()
         self.trans_city = city2num()
 
@@ -71,6 +71,8 @@ class RS:
         CORR_cp = self.corr_cosine(VEC_cp)
 
         res = CORR_city*0.1 + CORR_bio*0.2 + CORR_hob*0.2 + CORR_Ref*0.2 + CORR_cp*0.3
+        df_corr = pd.DataFrame(data =res ,index=self.data.index,columns=self.data.index)
+        df_corr.to_csv("Corr_Matrix\\corr_noname.csv")
         return res
 
     def normalized(self,vec):
@@ -82,9 +84,6 @@ if __name__ == "__main__":
 
     RS = RS()
     res = RS.compute_all_corr()
-    df_corr = RS.SIM_matrix = pd.DataFrame(data =res ,index=RS.all_user,columns=RS.all_user)
-    df_corr.to_csv("Corr_Matrix\\demo_rs.csv")
-    print(res)
     print("FINISH")
 
     
