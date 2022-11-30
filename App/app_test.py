@@ -22,9 +22,6 @@ class App(customtkinter.CTk):
 
         self.title(App.APP_NAME)
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
-        self.minsize(App.WIDTH, App.HEIGHT)
-        self.maxsize(App.WIDTH, App.HEIGHT)
-        self.resizable(False, False)
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.full = False
@@ -36,64 +33,73 @@ class App(customtkinter.CTk):
                                             corner_radius=0)
         self.frame.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
+        self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=250, corner_radius=0,
+                                              fg_color=("white", "gray38"), )
+        self.frame_0.place(relx=0.5, rely=0.4, anchor=tkinter.CENTER)
+        self.frame_0.grid_columnconfigure(0, weight=1)
+        self.frame_0.grid_columnconfigure(1, weight=1)
+
         self.label_1 = customtkinter.CTkLabel(master=self.frame, width=200, height=60,
                                                text="Choosing weight for recommender system")
         self.label_1.place(relx=0.5, rely=0.1, anchor=tkinter.CENTER)
 
-        self.hobbyLabel = customtkinter.CTkLabel(master=self.frame,
+        self.hobbyLabel = customtkinter.CTkLabel(master=self.frame_0,
                                               text="Hobby",width=50)
-        self.hobbyLabel.place(relx=0.1, rely=0.2, anchor=tkinter.E)
+        self.hobbyLabel.place(relx=0.1, rely=0.3, anchor=tkinter.E)
 
-        self.hobbyentry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=100)
-        self.hobbyentry.place(relx=0.2, rely=0.2, anchor=tkinter.CENTER)
+        self.hobbyentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
+        self.hobbyentry.place(relx=0.2, rely=0.3, anchor=tkinter.CENTER)
 
-        self.hometownLabel = customtkinter.CTkLabel(master=self.frame,
+        self.hometownLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                  text="Hometown", width=50)
-        self.hometownLabel.place(relx=0.6, rely=0.2, anchor=tkinter.CENTER)
+        self.hometownLabel.place(relx=0.6, rely=0.3, anchor=tkinter.CENTER)
 
-        self.hometownentry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=100)
-        self.hometownentry.place(relx=0.8, rely=0.2, anchor=tkinter.W)
+        self.hometownentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
+        self.hometownentry.place(relx=0.8, rely=0.3, anchor=tkinter.W)
 
 
-        self.cleanliness_privacyLabel = customtkinter.CTkLabel(master=self.frame,
+        self.cleanliness_privacyLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Cleaniness and Privacy")
-        self.cleanliness_privacyLabel.place(relx=0.6, rely=0.3, anchor=tkinter.CENTER)
+        self.cleanliness_privacyLabel.place(relx=0.6, rely=0.5, anchor=tkinter.CENTER)
 
-        self.cleanliness_privacy_entry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=100)
-        self.cleanliness_privacy_entry.place(relx=0.8, rely=0.3, anchor=tkinter.W)
+        self.cleanliness_privacy_entry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
+        self.cleanliness_privacy_entry.place(relx=0.8, rely=0.5, anchor=tkinter.W)
 
-        self.foodLabel = customtkinter.CTkLabel(master=self.frame,
+        self.foodLabel = customtkinter.CTkLabel(master=self.frame_0,
                                               text="food",width=50)
-        self.foodLabel.place(relx=0.1, rely=0.3, anchor=tkinter.E)
+        self.foodLabel.place(relx=0.1, rely=0.5, anchor=tkinter.E)
 
-        self.foodentry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=100)
-        self.foodentry.place(relx=0.2, rely=0.3, anchor=tkinter.CENTER)
+        self.foodentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
+        self.foodentry.place(relx=0.2, rely=0.5, anchor=tkinter.CENTER)
 
-        self.personalityLabel = customtkinter.CTkLabel(master=self.frame,
+        self.personalityLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                    text="Personality",width=50)
-        self.personalityLabel.place(relx=0.1, rely=0.4, anchor=tkinter.E)
+        self.personalityLabel.place(relx=0.1, rely=0.7, anchor=tkinter.E)
 
-        self.personalityentry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=100)
-        self.personalityentry.place(relx=0.2, rely=0.4, anchor=tkinter.CENTER)
+        self.personalityentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
+        self.personalityentry.place(relx=0.2, rely=0.7, anchor=tkinter.CENTER)
 
-        self.genderLabel = customtkinter.CTkLabel(master=self.frame,
+        self.genderLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Gender Separation?")
-        self.genderLabel.place(relx=0.6, rely=0.4, anchor=tkinter.CENTER)
+        self.genderLabel.place(relx=0.6, rely=0.7, anchor=tkinter.CENTER)
 
-        self.gender_switch = customtkinter.CTkSwitch(master=self.frame, text="Yes/No")
-        self.gender_switch.place(relx=0.8, rely=0.4, anchor=tkinter.W)
+        self.gender_switch = customtkinter.CTkSwitch(master=self.frame_0, text="Yes/No")
+        self.gender_switch.place(relx=0.8, rely=0.7, anchor=tkinter.W)
 
 
-        self.sliderLabel = customtkinter.CTkLabel(master=self.frame,
+        self.sliderLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Constrast",width=50)
-        self.sliderLabel.place(relx=0.1, rely=0.6, anchor=tkinter.E)
+        self.sliderLabel.place(relx=0.1, rely=0.9, anchor=tkinter.E)
 
         self.slider_value = 0
-        self.slider1 = customtkinter.CTkSlider(master=self.frame, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 400)
-        self.slider1.place(relx=0.5, rely=0.6, anchor=tkinter.CENTER)
+        self.slider1 = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 400)
+        self.slider1.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
 
-        self.frame_1 = customtkinter.CTkFrame(master=self, width=250, height=50, corner_radius=15, fg_color=("white", "gray38"),)
-        self.frame_1.place(relx=0.5, rely=0.7, anchor=tkinter.CENTER)
+        self.progressbar = customtkinter.CTkProgressBar(master=self.frame)
+        self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
+
+        self.frame_1 = customtkinter.CTkFrame(master=self.frame, width=250, height=50, corner_radius=0, fg_color=("white", "gray38"),)
+        self.frame_1.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
         self.frame_1.grid_columnconfigure(0, weight=1)
         self.frame_1.grid_columnconfigure(1, weight=1)
 
