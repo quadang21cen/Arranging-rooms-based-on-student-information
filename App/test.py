@@ -191,6 +191,7 @@ class App(customtkinter.CTk):
         cleanliness_privacy_value = self.cleanliness_privacy_entry.get()
         gender_switch_value = self.gender_switch.get()
         contrast_value = self.slider_contrast.get()
+        num_people_value = self.radio_var.get()
         print("start running")
     def fun_BT3(self):
         print("start running")
