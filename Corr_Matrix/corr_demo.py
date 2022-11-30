@@ -3,7 +3,7 @@ import scipy.cluster.hierarchy as spc
 import numpy as np
 def find_corr(limit, columns, lists):
     df = pd.DataFrame(lists,
-                      columns=['Name', 'val'])
+                      columns=columns)
 
     results = dict()
     print(len(columns))
