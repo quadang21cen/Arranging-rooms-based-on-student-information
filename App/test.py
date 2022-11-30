@@ -33,7 +33,7 @@ class App(customtkinter.CTk):
                                             corner_radius=0)
         self.frame.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
-        self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=250, corner_radius=15,
+        self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=270, corner_radius=15,
                                               fg_color=("white", "gray38"), )
         self.frame_0.place(relx=0.5, rely=0.4, anchor=tkinter.CENTER)
         self.frame_0.grid_columnconfigure(0, weight=1)
@@ -134,11 +134,11 @@ class App(customtkinter.CTk):
 
         self.sliderLabel = customtkinter.CTkLabel(master=self.frame_0,
                                                   text="Constrast",width=50)
-        self.sliderLabel.place(relx=0.1, rely=0.95, anchor=tkinter.E)
+        self.sliderLabel.place(relx=0.1, rely=0.88, anchor=tkinter.E)
 
         self.slider_value = 0
         self.slider_contrast = customtkinter.CTkSlider(master=self.frame_0, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 400)
-        self.slider_contrast.place(relx=0.5, rely=0.95, anchor=tkinter.CENTER)
+        self.slider_contrast.place(relx=0.5, rely=0.88, anchor=tkinter.CENTER)
 
         self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550)
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
