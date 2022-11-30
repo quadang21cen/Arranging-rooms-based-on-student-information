@@ -11,10 +11,6 @@ class App(customtkinter.CTk):
         self.title("CustomTkinter")
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(1, weight=1, minsize=200)
-        
-
-
-
 
         entry_1 = customtkinter.CTkEntry(placeholder_text="CTkEntry")
         # entry_1.pack(pady=12, padx=10)
