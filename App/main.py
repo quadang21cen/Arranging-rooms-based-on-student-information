@@ -110,19 +110,19 @@ txt = customtkinter.CTkEntry(window)
 #Vị trí xuất hiện của Textbox
 txt.grid(column=1, row=1)
 txt.focus()
+print(value)
+if value <= 1.5:
+    res = "Red"
+elif value <= 2.5:
+    res = "Green"
+elif value <= 3:
+    res = "Blue"
+else:
+    res = "Invalid option"
+lbl2.configure(text=res)
 res = "Empty"
 def viewSelected(value):
-    global res
-    print(value)
-    if value <= 1.5:
-      res = "Red"
-    elif value <= 2.5:
-       res =  "Green"
-    elif value <= 3:
-       res =  "Blue"
-    else:
-        res = "Invalid option"
-    lbl2.configure(text=res)
+    glo
 
 lbl2 = customtkinter.CTkLabel(window, text=str(res))
 lbl2.grid(column=0, row=2)
