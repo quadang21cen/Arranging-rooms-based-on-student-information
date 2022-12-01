@@ -7,7 +7,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
 import unicodedata
 import warnings
-from transformers import pipeline
 
 warnings.filterwarnings('ignore')
 

@@ -79,9 +79,18 @@ class PhoBERT:
     with torch.no_grad():
       last_hidden_states = self.v_phobert(input_ids=padded, attention_mask=attention_mask)
 
-    v_features = last_hidden_states[0][:, 0, :].numpy()
+    # v_features = last_hidden_states[0][:, 0, :]
+    embeddings = last_hidden_states[0]
+    mask = attention_mask.unsqueeze(-1).expand(embeddings.size()).float()
+    masked_embeddings = embeddings * mask
+    summed = torch.sum(masked_embeddings, 1)
+    summed_mask = torch.clamp(mask.sum(1), min=1e-9)
+    mean_pooled = summed / summed_mask
+    # Turn torch array into numpy array
+    mean_pooled = mean_pooled.detach().numpy()
+    # print(mean_pooled)
     # print(v_features.shape)
-    return v_features
+    return mean_pooled
     
   def text2vec(self, rows):
     self.load_stopwords()
