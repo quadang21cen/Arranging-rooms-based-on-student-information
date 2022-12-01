@@ -22,6 +22,7 @@ def find_corr_csv(csv_path, limit, num_people = 3):
             chosen = random.choice(temp_list)
             temp_list.remove(chosen)
             list_chosen.append(chosen)
+        list_chosen.sort()
         if k in results:
             results[k].append(list_chosen)
         else:
@@ -48,6 +49,7 @@ def find_corr(limit, columns, lists, num_people = 3):
             chosen = random.choice(temp_list)
             temp_list.remove(chosen)
             list_chosen.append(chosen)
+        list_chosen.sort()
         if k in results:
             results[k].append(list_chosen)
         else:
