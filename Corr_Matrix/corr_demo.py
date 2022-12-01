@@ -2,7 +2,7 @@ import pandas as pd
 import scipy.cluster.hierarchy as spc
 import numpy as np
 import random
-def find_corr_csv(csv_path, limit, num_people = 3):
+def find_corr_csv(csv_path, limit = 0.7, num_people = 3):
     df = pd.read_csv(csv_path)
     df.drop(columns=df.columns[0], axis=1, inplace=True)
     columns = df.columns
@@ -28,7 +28,7 @@ def find_corr_csv(csv_path, limit, num_people = 3):
         else:
             results[k] = list_chosen
     return results
-def find_corr(limit, columns, lists, num_people = 3):
+def find_corr(columns, lists, limit = 0.7, num_people = 3):
     df = pd.DataFrame(lists,
                       columns=columns)
 
