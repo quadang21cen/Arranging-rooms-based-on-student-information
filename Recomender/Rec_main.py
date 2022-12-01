@@ -12,8 +12,8 @@ from Vietnamese_validation.Vietnamese_validation import isMeaning
 
 class RS:
 
-    def __init__(self) -> None:
-        self.data = pd.read_csv('C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\student_ins.csv')
+    def __init__(self, path = 'C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\student_ins.csv') -> None:
+        self.data = pd.read_csv(path)
         self.all_user = self.data.iloc[:,:1].to_numpy().flatten()
         self.SIM_matrix = pd.DataFrame(index=self.data.index,columns=self.data.index)
         self.Pho_BERT = PhoBERT()
