@@ -4,6 +4,7 @@ import customtkinter
 from PIL import Image, ImageTk
 import os
 from tkinter import filedialog as fd
+import pandas as pd
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -24,7 +25,7 @@ class App(customtkinter.CTk):
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.full = False
+        self.hobby = None
 
 
         self.frame = customtkinter.CTkFrame(master=self,
@@ -158,6 +159,7 @@ class App(customtkinter.CTk):
         return ImageTk.PhotoImage(Image.open(PATH + path).resize((image_size, image_size)))
     def fun_BT1(self):
         filename = fd.askopenfilename()
+
         print("button pressed")
     def fun_BT2(self):
         hobby_value = self.hobbyentry.get()
