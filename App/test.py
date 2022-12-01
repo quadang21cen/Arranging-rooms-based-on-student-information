@@ -243,7 +243,7 @@ class App(customtkinter.CTk):
         files = [('All Files', '*.*'),
              ('Python Files', '*.py'),
              ('Text Document', '*.txt')]
-        results_df = pd.DataFrame.from_dict(self.results)
+        results_df = pd.DataFrame.from_dict(self.results,orient='index').transpose()
         self.results = None
         file = fd.asksaveasfile(filetypes = files, defaultextension = files)
         results_df.to_csv(file)
