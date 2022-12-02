@@ -150,14 +150,14 @@ class App(customtkinter.CTk):
         self.frame_1.grid_columnconfigure(0, weight=1)
         self.frame_1.grid_columnconfigure(1, weight=1)
 
-        self.settings_image = self.load_image("/Recomender/test_images/settings.png", 20)
-        self.save_image = self.load_image("/Recomender/test_images/save.png", 20)
-        self.bell_image = self.load_image("/Recomender/test_images/bell.png", 20)
-        self.add_folder_image = self.load_image("/Recomender/test_images/add-folder.png", 20)
-        self.add_list_image = self.load_image("/Recomender/test_images/add-folder.png", 20)
-        self.add_user_image = self.load_image("/Recomender/test_images/add-user.png", 20)
-        self.chat_image = self.load_image("/Recomender/test_images/chat.png", 20)
-        self.home_image = self.load_image("/Recomender/test_images/home.png", 20)
+        self.settings_image = self.load_image("App/test_images/settings.png", 20)
+        self.save_image = self.load_image("App/test_images/save.png", 20)
+        self.bell_image = self.load_image("App/test_images/bell.png", 20)
+        self.add_folder_image = self.load_image("App/test_images/add-folder.png", 20)
+        self.add_list_image = self.load_image("App/test_images/add-folder.png", 20)
+        self.add_user_image = self.load_image("App/test_images/add-user.png", 20)
+        self.chat_image = self.load_image("App/test_images/chat.png", 20)
+        self.home_image = self.load_image("App/test_images/home.png", 20)
 
         self.button_1 = customtkinter.CTkButton(master=self.frame_1, image=self.add_folder_image, text="Add Folder",
                                                 height=32,

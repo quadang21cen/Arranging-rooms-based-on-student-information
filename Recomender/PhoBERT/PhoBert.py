@@ -51,7 +51,7 @@ class PhoBERT:
     row = row.strip().lower()
     return row
 
-  def load_bert(self, path = "NLP\\PhoBERT\\RM_system_not_mixed__NLP_model\\"):
+  def load_bert(self, path = "Recommender\\PhoBERT\\RM_system_not_mixed__NLP_model\\"):
     self.v_phobert = AutoModel.from_pretrained(path, from_tf=True)
     self.v_tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
 
