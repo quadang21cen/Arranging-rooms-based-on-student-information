@@ -16,9 +16,15 @@ class city2num:
     def get_all(self, list):
         res = []
         for str_city in list:
-            print(self.to_num(str_city))
             res.append(self.to_num(str_city))
         return res
+
+    def to_city(self, list):
+        res = []
+        for code in list:
+            res.append(self.data[code][0])
+        return res
+
 def fun_ci2co(list):
     data = pd.read_csv("pre_processing\\Map_of_regions.csv").to_numpy().flatten().tolist()
     lis_code = []
@@ -28,7 +34,9 @@ def fun_ci2co(list):
     return lis_code
 
 if __name__ == "__main__":
-    print(fun_ci2co(['Bac Lieu','Kien Giang']))
-    # C2N = city2num()
+    # print(fun_ci2co(['Bac Lieu','Kien Giang']))
+    C2N = city2num()
+    print(C2N.to_city([54,53]))
+    
     # print(C2N.to_num("Bạc ieu"))
     print("FINISH")

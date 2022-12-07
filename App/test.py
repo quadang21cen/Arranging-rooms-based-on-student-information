@@ -4,6 +4,8 @@ import customtkinter
 from PIL import Image, ImageTk
 import os
 from tkinter import filedialog as fd
+from NLP.PhoBERT.PhoBert import PhoBERT
+from Corr_Matrix.corr_demo import find_corr
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -24,6 +26,14 @@ class App(customtkinter.CTk):
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.CORR_city = None
+        self.CORR_bio = None
+        self.CORR_hob = None
+        self.CORR_Ref = None
+        self.CORR_cp = None
+        self.CORR_food = None
+        self.results = None
+        self.data = None
 
 
         self.frame = customtkinter.CTkFrame(master=self,
@@ -179,9 +189,42 @@ class App(customtkinter.CTk):
     def load_image(self, path, image_size):
         """ load rectangular image with path relative to PATH """
         return ImageTk.PhotoImage(Image.open(PATH + path).resize((image_size, image_size)))
+    def check_text(self, corr_matrix, list_text, set_value = 0.9):
+        for i, text in enumerate(list_text):
+            if isMeaning(text) == False:
+                corr_matrix[i,:] = set_value
+                corr_matrix[:,i] = set_value
+        return corr_matrix
     def fun_BT1(self):
         filename = fd.askopenfilename()
+        self.data = pd.read_csv(filename)
+
+        list_city = self.data["Hometown"].tolist()
+        self.CORR_city = self.normalized(self.city_distance(self.trans_city.get_all(list_city)))
+        del list_city
+
+        # Bio_personality
+        bio = self.data["Bio_personality"].to_list()
+        VEC_bio = self.Pho_BERT.text2vec(bio)
+        self.CORR_bio = self.check_text(self.corr_cosine(VEC_bio), bio)
+        del VEC_bio, bio
+
+        # hob_inter
+        hob = self.data["hob_inter"]
+        VEC_hob = self.Pho_BERT.text2vec(hob)
+        self.CORR_hob = self.check_text(self.corr_cosine(VEC_hob), hob)
+        del VEC_hob, hob
+
+        # Refer roommate
+        ref = self.data["refer_roommate"]
+        Vec_ref = self.Pho_BERT.text2vec(ref)
+        self.CORR_Ref = self.check_text(self.corr_cosine(Vec_ref), ref)
+        del Vec_ref, ref
+        # Cleanliess and Privacy
+        VEC_cp = self.normalized(self.data[["Cleanliess", "Privacy"]].to_numpy())
+        self.CORR_cp = self.corr_cosine(VEC_cp)
         print("button pressed")
+
     def fun_BT2(self):
         messagebox.showerror('Python Error', 'Error: This is an Error Message!')
         hobby_value = self.hobbyentry.get()
@@ -192,13 +235,20 @@ class App(customtkinter.CTk):
         gender_switch_value = self.gender_switch.get() # Value 0 or 1
         contrast_value = float(self.slider_contrast.get()/100)
         num_people_value = self.radio_var.get()
+
+        res = self.CORR_city * 0.1 + self.CORR_bio * personality_value + self.CORR_hob * hobby_value + self.CORR_Ref * 0.2 + self.CORR_cp * 0.3
+        columns_list = [*range(3)]
+        self.results = find_corr(limit = contrast_value, columns=columns_list, lists=res)
         print("start running")
     def fun_BT3(self):
         print("start running")
         files = [('All Files', '*.*'),
              ('Python Files', '*.py'),
              ('Text Document', '*.txt')]
+        results_df = pd.DataFrame.from_dict(self.results,orient='index').transpose()
+        self.results = None
         file = fd.asksaveasfile(filetypes = files, defaultextension = files)
+        results_df.to_csv(file)
     def slider_value_get(self, val):
         self.slider_value = val
     def on_closing(self, event=0):

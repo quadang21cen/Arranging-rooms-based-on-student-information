@@ -44,7 +44,14 @@ class RS:
             corr_rs.append(row)
         return corr_rs
 
-    def compute_all_corr(self):
+    def enumLs(lst):
+        ls = []
+        for index,Val in enumerate(lst):
+            ls.append([Val,index])
+        ls.sort()
+        return ls
+
+    def compute_all_corr(self, W_hom = 0.1, W_Bio_per=0.2, W_hob = 0.2, W_ref = 0.2, W_cp = 0.2):
         list_city = self.data["Hometown"].tolist()
         CORR_city = self.normalized(self.city_distance(self.trans_city.get_all(list_city)))
         del list_city
