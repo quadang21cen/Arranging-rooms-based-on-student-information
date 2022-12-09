@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
 import unicodedata
 import warnings
-
+import pandas as pd
 warnings.filterwarnings('ignore')
 
 
@@ -51,13 +51,13 @@ class PhoBERT:
     row = row.strip().lower()
     return row
 
-  def load_bert(self, path = "Recommender\\PhoBERT\\RM_system_not_mixed__NLP_model\\"):
+  def load_bert(self, path = "dung1308/RM_system_not_mixed__NLP_model"):
     self.v_phobert = AutoModel.from_pretrained(path, from_tf=True)
     self.v_tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
 
   def make_bert_encode(self, line):
     # Phân thành từng từ
-    line = underthesea.word_tokenize(line)
+    line = underthesea.word_tokenize(str(line))
     # Lọc các từ vô nghĩa
     filtered_sentence = [w for w in line if not w in self.stopwords]
     # Ghép lại thành câu như cũ sau khi lọc
@@ -104,12 +104,7 @@ class PhoBERT:
     mean_pooled = mean_pooled.detach().numpy()
     #print(mean_pooled)
     # print(v_features.shape)
-<<<<<<< HEAD
-    return v_features
-
-=======
     return mean_pooled
->>>>>>> 54f84ab1e4a7393d0d964a2362b24b5085794099
   def text2vec(self, rows):
     self.load_stopwords()
     self.load_bert()
@@ -118,41 +113,15 @@ class PhoBERT:
 
 if __name__ == '__main__':
   # example text
-  import time
+  # import time
 
-  start_time = time.time()
-  text = ["Vẽ, coi phim, chơi game",
-          "Vẽ, đọc sách, chơi game",
-          "Hướng nội thích ở 1 mình, ko thích  đi chơi",
-          "ko thích  đi chơi, Hướng nội thích ở 1 mình"
-          ]
-  # Gọi hàm text2Vec
-  instance_PB = PhoBERT()
-  features = instance_PB.text2vec(text)
-  print(len(features[0]))
-  similarity = cosine_similarity([features[0]], [features[0]])
-  print("(0,0):",similarity)
-  similarity = cosine_similarity([features[0]], [features[1]])
-  print("(0,1):",similarity)
-  similarity = cosine_similarity([features[0]], [features[2]])
-  print("(0,2):",similarity)
-  similarity = cosine_similarity([features[0]], [features[3]])
-  print("(0,3):",similarity)
-  similarity = cosine_similarity([features[1]], [features[2]])
-  print("(1,2):",similarity)
-  similarity = cosine_similarity([features[2]], [features[0]])
-  print("(2,0):",similarity)
-  similarity = cosine_similarity([features[2]], [features[1]])
-  print("(2,1):",similarity)
-  similarity = cosine_similarity([features[2]], [features[3]])
-  print("(2,3):",similarity)
-
-  print("--- %s seconds ---" % (time.time() - start_time))
-  # So sánh
-  # from sklearn.metrics.pairwise import cosine_similarity
-  # import pandas as pd
-  # print("-----------------------------------------------")
-  # print("So sánh giữa các features (các vector của từng câu)")
-  # cosine_similarity = cosine_similarity(features, features)
-  # cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns=[*range(len(features))])
-  # print(cosine_similarity_pd)
+  # start_time = time.time()
+  # text = ["Vẽ, coi phim, chơi game",
+  #         "Vẽ, đọc sách, chơi game",
+  #         "Hướng nội thích ở 1 mình, ko thích  đi chơi",
+  #         "ko thích  đi chơi, Hướng nội thích ở 1 mình"
+  #         ]
+  data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Arranging-rooms-based-on-student-information\\pre_processing\\Data_Augmentation_10k.csv")
+  
+  pho = PhoBERT()
+  pho.text2vec(data.iloc[1,3])

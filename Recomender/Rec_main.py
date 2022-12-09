@@ -1,3 +1,4 @@
+
 from typing_extensions import Self
 import pandas as pd
 from pip import main
@@ -9,11 +10,17 @@ from sklearn import preprocessing
 from PhoBERT.PhoBert import PhoBERT
 from city2num import *
 from Vietnamese_validation.Vietnamese_validation import isMeaning
+import sys
+sys.path.append('c:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Arranging-rooms-based-on-student-information\\Recomender\\PhoBERT')
+
 
 class RS:
 
-    def __init__(self, path = 'C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\student_ins.csv') -> None:
-        self.data = pd.read_csv(path)
+    def __init__(self, df_path) -> None:
+        if df_path is str: 
+            self.data = self.data = pd.read_csv(df_path, encoding='utf-8')
+        else:
+            self.data = df_path.iloc[:1500,:]
         self.all_user = self.data.iloc[:,:1].to_numpy().flatten()
         self.SIM_matrix = pd.DataFrame(index=self.data.index,columns=self.data.index)
         self.Pho_BERT = PhoBERT()
@@ -44,14 +51,49 @@ class RS:
             corr_rs.append(row)
         return corr_rs
 
-    def enumLs(lst):
+    def enumLs(self, lst):
         ls = []
         for index,Val in enumerate(lst):
             ls.append([Val,index])
         ls.sort()
         return ls
 
-    def compute_all_corr(self, W_hom = 0.1, W_Bio_per=0.2, W_hob = 0.2, W_ref = 0.2, W_cp = 0.2):
+    def to_Room(self, groups):
+        user_room = []
+        for num,group in enumerate(groups):
+            for user in group:
+                user_room.append([user,num])
+        user_room = sorted(user_room)
+        to_df = pd.DataFrame(columns=['id', 'room'],data=user_room)
+        return to_df
+
+    def grouping(self,np_data,size = 3):
+        np_data = np_data.to_numpy()[:,1:]
+        len_data = len(np_data) -1
+        corr = np.fill_diagonal(np_data,0)
+        in_room = []
+        dorm = []
+        for  id, corr in enumerate(np_data):
+            room = []
+            i = -1
+            if id not in in_room:
+                max_size = 0
+                room.append(id)
+                in_room.append(id)
+                new_corr = self.enumLs(corr)
+                while max_size != size:
+                    if i < - len_data:
+                        break
+                    if new_corr[i][1] not in in_room:
+                        room.append(new_corr[i][1])
+                        in_room.append(new_corr[i][1])
+                        max_size = max_size + 1
+                    i = i - 1
+                dorm.append(room)
+        return dorm
+
+
+    def compute_all_corr(self, W_hom = 0.1, W_Bio_per=0.2, W_hob = 0.2, W_ref = 0.2, W_cp = 0.2, room_size = 3):
         list_city = self.data["Hometown"].tolist()
         CORR_city = self.normalized(self.city_distance(self.trans_city.get_all(list_city)))
         del list_city
@@ -79,18 +121,29 @@ class RS:
 
         res = CORR_city*0.1 + CORR_bio*0.2 + CORR_hob*0.2 + CORR_Ref*0.2 + CORR_cp*0.3
         df_corr = pd.DataFrame(data =res ,index=self.data.index,columns=self.data.index)
-        df_corr.to_csv("Corr_Matrix\\corr_noname.csv")
-        return res
+        # df_corr.to_csv("Corr_Matrix\\new_corr_noname.csv")
+        return df_corr
 
     def normalized(self,vec):
         min_max_scaler = preprocessing.MinMaxScaler()
         return min_max_scaler.fit_transform(vec)
+
+    def arrange_ROOM(self):     # run this funtion to finish the project 
+        df_corr = self.compute_all_corr()
+        df_group = self.grouping(df_corr)
+        return self.to_Room(df_group)
         
 
 if __name__ == "__main__":
-
-    RS = RS()
-    res = RS.compute_all_corr()
+    print("START...")
+    import time
+    st = time.time()
+    data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\FINAL_Data_set_FixHW.csv", encoding='utf-8')
+    RS = RS(data)
+    res = RS.arrange_ROOM()
+    res.to_csv("Result\\Room_result.csv",index = False)
+    et = time.time()
+    # get the execution time
+    elapsed_time = et - st
+    print('Execution time:', elapsed_time, 'seconds')
     print("FINISH")
-
-    

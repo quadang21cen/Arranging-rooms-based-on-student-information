@@ -5,6 +5,8 @@ from PIL import Image, ImageTk
 import os
 from tkinter import filedialog as fd
 from Rec_main import RS
+import threading
+import pandas as pd
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -20,12 +22,13 @@ class App(customtkinter.CTk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.corr_rs = df = pd.DataFrame()
         self.title(App.APP_NAME)
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.RS = None
+        self.filename = None
 
         self.frame = customtkinter.CTkFrame(master=self,
                                             width=App.WIDTH,
@@ -148,23 +151,25 @@ class App(customtkinter.CTk):
         self.frame_1.grid_columnconfigure(0, weight=1)
         self.frame_1.grid_columnconfigure(1, weight=1)
 
-        self.settings_image = self.load_image("Recomender/test_images/settings.png", 20)
-        self.save_image = self.load_image("Recomender/test_images/save.png", 20)
-        self.bell_image = self.load_image("Recomender/test_images/bell.png", 20)
-        self.add_folder_image = self.load_image("Recomender/test_images/add-folder.png", 20)
-        self.add_list_image = self.load_image("Recomender/test_images/add-folder.png", 20)
-        self.add_user_image = self.load_image("Recomender/test_images/add-user.png", 20)
-        self.chat_image = self.load_image("Recomender/test_images/chat.png", 20)
-        self.home_image = self.load_image("Recomender/test_images/home.png", 20)
+        self.settings_image = self.load_image("\\test_images\\settings.png", 20)
+        self.save_image = self.load_image("\\test_images\\save.png", 20)
+        self.bell_image = self.load_image("\\test_images\\bell.png", 20)
+        self.add_folder_image = self.load_image("\\test_images\\add-folder.png", 20)
+        self.add_list_image = self.load_image("\\test_images\\add-folder.png", 20)
+        self.add_user_image = self.load_image("\\test_images\\add-user.png", 20)
+        self.chat_image = self.load_image("\\test_images\\chat.png", 20)
+        self.home_image = self.load_image("\\test_images\\home.png", 20)
 
         self.button_1 = customtkinter.CTkButton(master=self.frame_1, image=self.add_folder_image, text="Add Folder",
                                                 height=32,
                                                 compound="right", command=self.fun_BT1)
         self.button_1.grid(row=0, column=0, columnspan=1, padx=20, pady=(20, 10), sticky="ew")
 
+        self.t = threading.Thread(target=self.fun_BT2)
+        self.stop_thread = False
         self.button_2 = customtkinter.CTkButton(master=self.frame_1, image=self.add_list_image, text="Start", height=32,
                                                 compound="right", fg_color="#D35B58", hover_color="#C77C78",
-                                                command=self.fun_BT2)
+                                                command=self.stat_thread_fun_BT2)
         self.button_2.grid(row=0, column=1, columnspan=1, padx=20, pady=(20, 10), sticky="ew")
 
         self.button_3 = customtkinter.CTkButton(master=self.frame_1, image=self.save_image, text="save", height=32,
@@ -177,12 +182,28 @@ class App(customtkinter.CTk):
         """ load rectangular image with path relative to PATH """
         return ImageTk.PhotoImage(Image.open(PATH + path).resize((image_size, image_size)))
     def fun_BT1(self):
+
         self.filename = fd.askopenfilename()
         #print(self.filename)
         print("button pressed")
+    def stat_thread_fun_BT2(self):
+        if self.t.is_alive():
+            tkinter.messagebox.showerror('Program is running', 'Error: The program is running. Please Stand By !')
+            return
+        self.t = threading.Thread(target=self.fun_BT2)
+        self.t.start()
+        stop_event = threading.Event()
+        stop_event.set()
+        pass_key = True
+        while pass_key == True:
+            if not self.t.is_alive():
+                tkinter.messagebox.showinfo('Program running done', 'Finished task')
+                pass_key = False
+
+
     def fun_BT2(self):
         self.RS = RS(path = self.filename)
-        res = self.RS.compute_all_corr()
+        self.corr_rs = self.RS.compute_all_corr()
 
         # hobby_value = self.hobbyentry.get()
         # food_value = self.foodentry.get()
@@ -192,13 +213,14 @@ class App(customtkinter.CTk):
         # gender_switch_value = self.gender_switch.get() # Value 0 or 1
         # contrast_value = float(self.slider_contrast.get()/100)
         # num_people_value = self.radio_var.get()
-        print("start running")
+        print("FINISH COMPUTE CORR")
     def fun_BT3(self):
         print("start running")
         files = [('All Files', '*.*'),
              ('Python Files', '*.py'),
              ('Text Document', '*.txt')]
         file = fd.asksaveasfile(filetypes = files, defaultextension = files)
+        self.corr_rs.to_csv(file)
     def slider_value_get(self, val):
         self.slider_value = val
     def on_closing(self, event=0):
