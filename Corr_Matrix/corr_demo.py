@@ -4,6 +4,7 @@ import numpy as np
 import random
 def find_corr_csv(csv_path, limit = 0.7, num_people = 3):
     df = pd.read_csv(csv_path)
+    # If there is unnamed column (index not id), drop it
     df.drop(columns=df.columns[0], axis=1, inplace=True)
     columns = df.columns
     results = dict()
@@ -34,7 +35,7 @@ def find_corr(columns, lists, limit = 0.7, num_people = 3):
 
     results = dict()
     print(len(columns))
-    for k in range(len(columns)):
+    for k in range(len(columns)): # k is index
         temp_list = []
         #print(len(df[column].tolist()))
         for i in range(len(df[columns[k]].tolist())):
@@ -42,6 +43,8 @@ def find_corr(columns, lists, limit = 0.7, num_people = 3):
                 continue
             if df[columns[k]][i] >= limit:
                 temp_list.append(i)
+                # if there is id in first column
+                # temp_list.append(df["id"][i])
         list_chosen = []
         for j in range(int(num_people)):
             if not temp_list:

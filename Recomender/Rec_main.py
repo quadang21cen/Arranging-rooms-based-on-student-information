@@ -119,7 +119,7 @@ class RS:
         VEC_cp = self.normalized(self.data[["Cleanliess","Privacy"]].to_numpy())
         CORR_cp = self.corr_cosine(VEC_cp)
 
-        res = CORR_city*0.1 + CORR_bio*0.2 + CORR_hob*0.2 + CORR_Ref*0.2 + CORR_cp*0.3
+        res = CORR_city*W_hom + CORR_bio*W_Bio_per + CORR_hob*W_hob + CORR_Ref*W_ref + CORR_cp*W_cp
         df_corr = pd.DataFrame(data =res ,index=self.data.index,columns=self.data.index)
         # df_corr.to_csv("Corr_Matrix\\new_corr_noname.csv")
         return df_corr
@@ -128,10 +128,13 @@ class RS:
         min_max_scaler = preprocessing.MinMaxScaler()
         return min_max_scaler.fit_transform(vec)
 
-    def arrange_ROOM(self):     # run this funtion to finish the project 
-        df_corr = self.compute_all_corr()
-        df_group = self.grouping(df_corr)
-        return self.to_Room(df_group)
+    def arrange_ROOM(self,weight=[0.1,0.2,0.2,0.2,0,2], split = False):     # run this funtion to finish the project
+        if split is False:
+            df_corr = self.compute_all_corr()
+            df_group = self.grouping(df_corr)
+            return self.to_Room(df_group)
+        else:
+            pass
         
 
 if __name__ == "__main__":

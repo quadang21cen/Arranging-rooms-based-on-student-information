@@ -66,12 +66,12 @@ class user_Generator:
 
 if __name__ == "__main__":
     gen = user_Generator("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\FINAL_Data_set_FixHW.csv")
-    new_user = gen.gen_user(3000)
+    new_user = gen.gen_user(10000)
     df = pd.DataFrame(new_user, columns = [ 'Sex','Hometown', 'Bio_personality','food_drink',
                                             'hob_inter','smoking','refer_roommate','Cleanliess','Privacy'])
 
     
     df.append(gen.data)
     df = df.sample(frac=1)
-    df.to_csv('pre_processing\Data_Augmentation.csv')
+    df.to_csv('pre_processing\Data_Augmentation_10k.csv',encoding='utf-8-sig')
     print("FINISH...")

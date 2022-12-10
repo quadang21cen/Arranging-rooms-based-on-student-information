@@ -16,7 +16,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 class App(customtkinter.CTk):
 
-    APP_NAME = "CustomTkinter example_background_image.py"
+    APP_NAME = "RS.py"
     WIDTH = 900
     HEIGHT = 600
 
@@ -38,7 +38,7 @@ class App(customtkinter.CTk):
 
         self.frame_0 = customtkinter.CTkFrame(master=self.frame, width=650, height=270, corner_radius=15,
                                               fg_color=("white", "gray38"), )
-        self.frame_0.place(relx=0.5, rely=0.33, anchor=tkinter.CENTER)
+        self.frame_0.place(relx=0.5, rely=0.3, anchor=tkinter.CENTER)
         self.frame_0.grid_columnconfigure(0, weight=1)
         self.frame_0.grid_columnconfigure(1, weight=1)
 
@@ -82,12 +82,19 @@ class App(customtkinter.CTk):
         self.personalityentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
         self.personalityentry.place(relx=0.27, rely=0.85, anchor=tkinter.CENTER)
 
-        self.genderLabel = customtkinter.CTkLabel(master=self.frame_0,
-                                                  text="Gender Separation?")
-        self.genderLabel.place(relx=0.6, rely=0.85, anchor=tkinter.CENTER)
+        self.refLabel = customtkinter.CTkLabel(master=self.frame_0,
+                                              text="Reference",width=50)
+        self.refLabel.place(relx=0.6, rely=0.85, anchor=tkinter.CENTER)
 
-        self.gender_switch = customtkinter.CTkSwitch(master=self.frame_0, text="No/Yes")
-        self.gender_switch.place(relx=0.8, rely=0.85, anchor=tkinter.W)
+        self.refentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
+        self.refentry.place(relx=0.8, rely=0.85, anchor=tkinter.W)
+
+        self.genderLabel = customtkinter.CTkLabel(master=self.frame,
+                                                  text="Gender Separation?")
+        self.genderLabel.place(relx=0.2, rely=0.6, anchor=tkinter.E)
+
+        self.gender_switch = customtkinter.CTkSwitch(master=self.frame, text="No/Yes")
+        self.gender_switch.place(relx=0.3, rely=0.6, anchor=tkinter.CENTER)
 
         self.roomLabel = customtkinter.CTkLabel(master=self.frame,
                                                     text="Number of people", width=50)
@@ -194,25 +201,27 @@ class App(customtkinter.CTk):
         self.t.start()
         stop_event = threading.Event()
         stop_event.set()
-        pass_key = True
-        while pass_key == True:
-            if not self.t.is_alive():
-                tkinter.messagebox.showinfo('Program running done', 'Finished task')
-                pass_key = False
+        
 
 
     def fun_BT2(self):
-        self.RS = RS(path = self.filename)
-        self.corr_rs = self.RS.compute_all_corr()
-
-        # hobby_value = self.hobbyentry.get()
-        # food_value = self.foodentry.get()
-        # personality_value = self.personalityentry.get()
-        # hometown_value = self.hometownentry.get()
-        # cleanliness_privacy_value = self.cleanliness_privacy_entry.get()
-        # gender_switch_value = self.gender_switch.get() # Value 0 or 1
-        # contrast_value = float(self.slider_contrast.get()/100)
-        # num_people_value = self.radio_var.get()
+        # self.RS = RS(path = self.filename)
+        # self.corr_rs = self.RS.compute_all_corr()
+        W_hob = self.hobbyentry.get()
+        print(W_hob)
+        food_value = self.foodentry.get()
+        W_Bio_per = self.personalityentry.get()
+        W_hom = self.hometownentry.get()
+        W_cp = self.cleanliness_privacy_entry.get()
+        W_ref = self.refentry.get()
+        gender_switch_value = self.gender_switch.get() # Value 0 or 1
+        contrast_value = float(self.slider_contrast.get()/100)
+        room_size = self.radio_var.get()
+        ls_weight = [W_hom,W_Bio_per,W_hob, W_ref,W_cp]
+        for W in ls_weight:
+            if len(W) == 0:
+                print("None")
+       
         print("FINISH COMPUTE CORR")
     def fun_BT3(self):
         print("start running")
