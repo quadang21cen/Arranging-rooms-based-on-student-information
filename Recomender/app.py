@@ -69,7 +69,7 @@ class App(customtkinter.CTk):
         self.cleanliness_privacy_entry.place(relx=0.8, rely=0.65, anchor=tkinter.W)
 
         self.foodLabel = customtkinter.CTkLabel(master=self.frame_0,
-                                              text="food",width=50)
+                                              text="Food",width=50)
         self.foodLabel.place(relx=0.1, rely=0.65, anchor=tkinter.E)
 
         self.foodentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
@@ -205,28 +205,37 @@ class App(customtkinter.CTk):
 
 
     def fun_BT2(self):
-        self.RS = RS(path = self.filename)
+        if self.filename == None:
+            tkinter.messagebox.showwarning('Missing file path', 'This button works if there is a file !')
+            return
+        self.RS = RS(df_path = self.filename)
         # self.corr_rs = self.RS.compute_all_corr()
         W_hob = self.hobbyentry.get()
-        print(W_hob)
         food_value = self.foodentry.get()
         W_Bio_per = self.personalityentry.get()
         W_hom = self.hometownentry.get()
         W_cp = self.cleanliness_privacy_entry.get()
         W_ref = self.refentry.get()
+        W_food = self.foodentry.get()
         gender_switch_value = self.gender_switch.get() # Value 0 or 1
         contrast_value = float(self.slider_contrast.get()/100)
         room_size = self.radio_var.get()
         ls_weight = [W_hom,W_Bio_per,W_hob, W_ref,W_cp]
+        W_calulated_pass = False
         for W in ls_weight:
             if len(W) == 0:
-                tkinter.messagebox.showwarning('Missing value', 'Missing the value. The program will start using default values !')
+                tkinter.messagebox.showwarning('Using default values', 'Missing values in entries. Program runs by default weights!')
+                W_calulated_pass = True
                 self.corr_rs = self.RS.arrange_ROOM()
                 break
-        tkinter.messagebox.showinfo('FINISH COMPUTE CORR', 'FINISH COMPUTE CORR !')
-       
+        if W_calulated_pass is True:
+            self.corr_rs = self.RS.arrange_ROOM(ls_weight)
+        tkinter.messagebox.showinfo('Program done', 'FINISH COMPUTE CORR !')
         print("FINISH COMPUTE CORR")
     def fun_BT3(self):
+        if self.corr_rs.empty:
+            tkinter.messagebox.showwarning('Need to run first', 'There are no file to save !')
+            return
         print("start running")
         files = [('All Files', '*.*'),
              ('Python Files', '*.py'),
