@@ -1,14 +1,12 @@
-import os
 import torch
 import numpy
 import re
-import underthesea # Thư viện tách từ
-from sklearn.metrics.pairwise import cosine_similarity
+from underthesea import text_normalize, word_tokenize  # Thư viện tách từ
 from transformers import AutoModel, AutoTokenizer # Thư viện BERT
-import unicodedata
-import warnings
+from warnings import filterwarnings
 import pandas as pd
-warnings.filterwarnings('ignore')
+import time
+filterwarnings('ignore')
 
 
 emoji_pattern = re.compile("["
@@ -35,19 +33,10 @@ class PhoBERT:
   def standardize_data(self, row):
     # Xóa dấu chấm, phẩy, hỏi ở cuối câu
     row = re.sub(r"[\.,\?]+$-", "", row)
-    # Xóa tất cả dấu chấm, phẩy, chấm phẩy, chấm thang, ... trong câu
     row = emoji_pattern.sub(r'', row)
     row = row.replace("http://", " ").replace("<unk>", " ")
-    # row = row.replace("http://", " ").replace("(", " ").replace("=", " ")\
-    #     .replace(".", " ") \
-    #     .replace(";", ",").replace("“", " ") \
-    #     .replace(":", ",").replace("”", " ") \
-    #     .replace('"', ",").replace("'", " ") \
-    #     .replace("!", ",").replace("?", " ") \
-    #     .replace("-", ",").replace("?", " ") \
-    #     .replace("/", ",")
     row = re.sub(r"\s+", " ", row)  # Remove multiple spaces in content
-    row = underthesea.text_normalize(row)
+    row = text_normalize(row)
     row = row.strip().lower()
     return row
 
@@ -57,28 +46,23 @@ class PhoBERT:
 
   def make_bert_encode(self, line):
     # Phân thành từng từ
-    line = underthesea.word_tokenize(str(line))
+    line = word_tokenize(str(line))
     # Lọc các từ vô nghĩa
     filtered_sentence = [w for w in line if not w in self.stopwords]
     # Ghép lại thành câu như cũ sau khi lọc
     line = " ".join(filtered_sentence)
-    line = underthesea.word_tokenize(line, format="text")
+    line = word_tokenize(line, format="text")
     line = self.standardize_data(line)
     # print("Word segment  = ", line)
     # Tokenize bởi BERT
     encoded_line = self.v_tokenizer.encode(line)
     return encoded_line
   def make_bert_features(self, v_text):
-    max_len = 0  # Mỗi câu dài tối đa 100 từ
     v_tokenized = [self.make_bert_encode(i_text) for i_text in v_text]
-    for i in v_tokenized:
-      if len(i) > max_len:
-        max_len = len(i)
-    #print(v_tokenized)
+    maxList = max(v_tokenized, key=lambda i: len(i))
+    max_len = len(maxList)
     # Chèn thêm số 1 vào cuối câu nếu như không đủ 100 từ
     padded = numpy.array([i + [1] * (max_len - len(i)) for i in v_tokenized])
-    # print('padded:', padded[0])
-    # print('len padded:', padded.shape)
 
     # Đánh dấu các từ thêm vào = 0 để không tính vào quá trình lấy features
     attention_mask = numpy.where(padded == 1, 0, 1)
@@ -93,7 +77,6 @@ class PhoBERT:
     with torch.no_grad():
       last_hidden_states = self.v_phobert(input_ids=padded, attention_mask=attention_mask)
 
-    #v_features = last_hidden_states[0][:, 0, :]
     embeddings = last_hidden_states[0]
     mask = attention_mask.unsqueeze(-1).expand(embeddings.size()).float()
     masked_embeddings = embeddings * mask
@@ -102,8 +85,7 @@ class PhoBERT:
     mean_pooled = summed / summed_mask
     # Turn torch array into numpy array
     mean_pooled = mean_pooled.detach().numpy()
-    #print(mean_pooled)
-    # print(v_features.shape)
+    # Size: (number of texts, 768)
     return mean_pooled
   def text2vec(self, rows):
     self.load_stopwords()
@@ -112,16 +94,7 @@ class PhoBERT:
     return features
 
 if __name__ == '__main__':
-  # example text
-  # import time
-
-  # start_time = time.time()
-  # text = ["Vẽ, coi phim, chơi game",
-  #         "Vẽ, đọc sách, chơi game",
-  #         "Hướng nội thích ở 1 mình, ko thích  đi chơi",
-  #         "ko thích  đi chơi, Hướng nội thích ở 1 mình"
-  #         ]
+  # Gọi hàm text2Vec
   data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Arranging-rooms-based-on-student-information\\pre_processing\\Data_Augmentation_10k.csv")
-  
   pho = PhoBERT()
-  pho.text2vec(data.iloc[1,3])
+  vectors = pho.text2vec(data.iloc[1,3])
