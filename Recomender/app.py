@@ -205,7 +205,7 @@ class App(customtkinter.CTk):
 
 
     def fun_BT2(self):
-        # self.RS = RS(path = self.filename)
+        self.RS = RS(path = self.filename)
         # self.corr_rs = self.RS.compute_all_corr()
         W_hob = self.hobbyentry.get()
         print(W_hob)
@@ -220,7 +220,10 @@ class App(customtkinter.CTk):
         ls_weight = [W_hom,W_Bio_per,W_hob, W_ref,W_cp]
         for W in ls_weight:
             if len(W) == 0:
-                print("None")
+                tkinter.messagebox.showwarning('Missing value', 'Missing the value. The program will start using default values !')
+                self.corr_rs = self.RS.arrange_ROOM()
+                break
+        tkinter.messagebox.showinfo('FINISH COMPUTE CORR', 'FINISH COMPUTE CORR !')
        
         print("FINISH COMPUTE CORR")
     def fun_BT3(self):

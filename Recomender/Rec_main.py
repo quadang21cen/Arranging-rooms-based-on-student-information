@@ -17,7 +17,8 @@ sys.path.append('c:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9
 class RS:
 
     def __init__(self, df_path) -> None:
-        if df_path is str: 
+        if df_path is str: # Error
+        # if isinstance(df_path,str):
             self.data = self.data = pd.read_csv(df_path, encoding='utf-8')
         else:
             self.data = df_path.iloc[:1500,:]
