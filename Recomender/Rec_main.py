@@ -20,7 +20,7 @@ class RS:
         if df_path is str: 
             self.data = self.data = pd.read_csv(df_path, encoding='utf-8')
         else:
-            self.data = df_path.iloc[:1500,:]
+            self.data = df_path.iloc[:30,:]
         self.all_user = self.data.iloc[:,:1].to_numpy().flatten()
         self.SIM_matrix = pd.DataFrame(index=self.data.index,columns=self.data.index)
         self.Pho_BERT = PhoBERT()
@@ -93,7 +93,7 @@ class RS:
         return dorm
 
 
-    def compute_all_corr(self, W_hom = 0.1, W_Bio_per=0.2, W_hob = 0.2, W_ref = 0.2, W_cp = 0.2, room_size = 3):
+    def compute_all_corr(self, W_hom = 0.1, W_Bio_per=0.2,W_FaD= 0.2, W_hob = 0.2, W_ref = 0.2, W_cp = 0.2, room_size = 3):
         list_city = self.data["Hometown"].tolist()
         CORR_city = self.normalized(self.city_distance(self.trans_city.get_all(list_city)))
         del list_city
@@ -115,11 +115,17 @@ class RS:
         Vec_ref = self.Pho_BERT.text2vec(ref)
         CORR_Ref = self.check_text(self.corr_cosine(Vec_ref),ref)
         del Vec_ref, ref
+
+        #food_drink
+        FaD = self.data["food_drink"]
+        Vec_FaD = self.Pho_BERT.text2vec(FaD)
+        CORR_FaD = self.check_text(self.corr_cosine(Vec_FaD),FaD)
+
         # Cleanliess and Privacy
         VEC_cp = self.normalized(self.data[["Cleanliess","Privacy"]].to_numpy())
         CORR_cp = self.corr_cosine(VEC_cp)
 
-        res = CORR_city*W_hom + CORR_bio*W_Bio_per + CORR_hob*W_hob + CORR_Ref*W_ref + CORR_cp*W_cp
+        res = CORR_city*W_hom + CORR_bio*W_Bio_per + CORR_FaD*W_FaD + CORR_hob*W_hob + CORR_Ref*W_ref + CORR_cp*W_cp + CORR_FaD*0.1
         df_corr = pd.DataFrame(data =res ,index=self.data.index,columns=self.data.index)
         # df_corr.to_csv("Corr_Matrix\\new_corr_noname.csv")
         return df_corr
