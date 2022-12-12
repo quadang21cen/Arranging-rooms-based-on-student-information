@@ -217,14 +217,14 @@ class App(customtkinter.CTk):
         W_cp = self.cleanliness_privacy_entry.get()
         W_ref = self.refentry.get()
         W_food = self.foodentry.get()
-        gender_switch_value = self.gender_switch.get() # Value 0 for not or 1 for yes
+        split_gender = self.gender_switch.get() # Value 0 for not or 1 for yes
         contrast_value = float(self.slider_contrast.get()/100)
         room_size = self.radio_var.get()
-        ls_weight = [W_hom,W_Bio_per,W_hob, W_ref,W_cp, W_food, room_size, gender_switch_value, contrast_value]
+        ls_weight = [W_hom,W_Bio_per,W_food, W_hob, W_ref,W_cp, room_size, contrast_value]
         for i in range(len(ls_weight)):
             if len(ls_weight[i]) == 0:
                 ls_weight[i] = 0
-        self.corr_rs = self.RS.arrange_ROOM(ls_weight)
+        self.corr_rs = self.RS.arrange_ROOM(ls_weight,split_gender = split_gender)
         tkinter.messagebox.showinfo('Program done', 'FINISH COMPUTE CORR !')
         print("FINISH COMPUTE CORR")
     def fun_BT3(self):
