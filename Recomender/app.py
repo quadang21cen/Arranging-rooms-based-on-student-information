@@ -90,12 +90,12 @@ class App(customtkinter.CTk):
         self.refentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
         self.refentry.place(relx=0.8, rely=0.85, anchor=tkinter.W)
 
-        self.genderLabel = customtkinter.CTkLabel(master=self.frame,
+        #self.genderLabel = customtkinter.CTkLabel(master=self.frame,
                                                   text="Gender Separation?")
-        self.genderLabel.place(relx=0.2, rely=0.6, anchor=tkinter.E)
+        #self.genderLabel.place(relx=0.2, rely=0.6, anchor=tkinter.E)
 
-        self.gender_switch = customtkinter.CTkSwitch(master=self.frame, text="No/Yes")
-        self.gender_switch.place(relx=0.3, rely=0.6, anchor=tkinter.CENTER)
+        #self.gender_switch = customtkinter.CTkSwitch(master=self.frame, text="No/Yes")
+        #self.gender_switch.place(relx=0.3, rely=0.6, anchor=tkinter.CENTER)
 
         self.roomLabel = customtkinter.CTkLabel(master=self.frame,
                                                     text="Number of people", width=50)
@@ -219,17 +219,17 @@ class App(customtkinter.CTk):
         W_cp = self.cleanliness_privacy_entry.get()
         W_ref = self.refentry.get()
         W_food = self.foodentry.get()
-        split_gender = self.gender_switch.get() # Value 0 for not or 1 for yes
+        #split_gender = self.gender_switch.get() # Value 0 for not or 1 for yes
         contrast_value = float(self.slider_contrast.get()/100)
         room_size = self.radio_var.get()
-        ls_weight = [W_hom,W_Bio_per,W_food, W_hob, W_ref,W_cp, room_size, contrast_value]
+        ls_weight = [W_hom,W_Bio_per,W_food, W_hob, W_ref,W_cp]
         number_empty = []
         for i in range(len(ls_weight)):
             if len(ls_weight[i]) == 0:
                 number_empty.append(i)
         for j in ls_weight:
             ls_weight[i] = 100/(len(number_empty))
-        self.corr_rs = self.RS.arrange_ROOM(ls_weight,split_gender = split_gender)
+        self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, contrast_value=contrast_value)
         tkinter.messagebox.showinfo('Program done', '"FINISH COMPUTE CORR! Timer: ", final - initial')
         print("FINISH COMPUTE CORR")
         final = time.time()
