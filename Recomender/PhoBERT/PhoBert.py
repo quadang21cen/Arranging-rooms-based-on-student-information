@@ -87,9 +87,10 @@ class PhoBERT:
     mean_pooled = mean_pooled.detach().numpy()
     # Size: (number of texts, 768)
     return mean_pooled
-  def text2vec(self, rows):
+  def loadAll(self):
     self.load_stopwords()
     self.load_bert()
+  def text2vec(self, rows):
     features = self.make_bert_features(rows)
     return features
 
