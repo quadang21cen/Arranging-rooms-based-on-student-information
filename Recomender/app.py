@@ -7,6 +7,7 @@ from tkinter import filedialog as fd
 from Rec_main import RS
 import threading
 import pandas as pd
+import time
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -208,6 +209,7 @@ class App(customtkinter.CTk):
         if self.filename == None:
             tkinter.messagebox.showwarning('Missing file path', 'This button works if there is a file !')
             return
+        initial = time.time()
         self.RS = RS(df_path = self.filename)
         # self.corr_rs = self.RS.compute_all_corr()
         W_hob = self.hobbyentry.get()
@@ -228,8 +230,9 @@ class App(customtkinter.CTk):
         for j in ls_weight:
             ls_weight[i] = 100/(len(number_empty))
         self.corr_rs = self.RS.arrange_ROOM(ls_weight,split_gender = split_gender)
-        tkinter.messagebox.showinfo('Program done', 'FINISH COMPUTE CORR !')
+        tkinter.messagebox.showinfo('Program done', '"FINISH COMPUTE CORR! Timer: ", final - initial')
         print("FINISH COMPUTE CORR")
+        final = time.time()
     def fun_BT3(self):
         if self.corr_rs.empty:
             tkinter.messagebox.showwarning('Need to run first', 'There are no file to save !')
