@@ -31,6 +31,7 @@ class RS:
         return cosine_similarity(util_matrix,util_matrix)
 
     def PhoB2vec(self,data):
+        self.Pho_BERT.loadAll()
         vec = self.Pho_BERT.text2vec(data)
         vec = self.normalized(vec)
         return vec
@@ -98,6 +99,8 @@ class RS:
         list_city = self.data["Hometown"].tolist()
         CORR_city = self.normalized(self.city_distance(self.trans_city.get_all(list_city)))
         del list_city
+        
+        self.Pho_BERT.loadAll()
 
         # Bio_personality
         bio = self.data["Bio_personality"].to_list()
