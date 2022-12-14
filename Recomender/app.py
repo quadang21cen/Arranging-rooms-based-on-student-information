@@ -221,9 +221,12 @@ class App(customtkinter.CTk):
         contrast_value = float(self.slider_contrast.get()/100)
         room_size = self.radio_var.get()
         ls_weight = [W_hom,W_Bio_per,W_food, W_hob, W_ref,W_cp, room_size, contrast_value]
+        number_empty = []
         for i in range(len(ls_weight)):
             if len(ls_weight[i]) == 0:
-                ls_weight[i] = 0
+                number_empty.append(i)
+        for j in ls_weight:
+            ls_weight[i] = 100/(len(number_empty))
         self.corr_rs = self.RS.arrange_ROOM(ls_weight,split_gender = split_gender)
         tkinter.messagebox.showinfo('Program done', 'FINISH COMPUTE CORR !')
         print("FINISH COMPUTE CORR")
