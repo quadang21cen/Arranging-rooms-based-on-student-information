@@ -217,14 +217,19 @@ class App(customtkinter.CTk):
         W_cp = self.cleanliness_privacy_entry.get()
         W_ref = self.refentry.get()
         W_food = self.foodentry.get()
-        gender_switch_value = self.gender_switch.get() # Value 0 for not or 1 for yes
+        gender_switch_value = self.gender_switch.get() # Value 0 or 1
         contrast_value = float(self.slider_contrast.get()/100)
         room_size = self.radio_var.get()
-        ls_weight = [W_hom,W_Bio_per,W_hob, W_ref,W_cp, W_food, room_size, gender_switch_value, contrast_value]
-        for i in range(len(ls_weight)):
-            if len(ls_weight[i]) == 0:
-                ls_weight[i] = 0
-        self.corr_rs = self.RS.arrange_ROOM(ls_weight)
+        ls_weight = [W_hom,W_Bio_per,W_hob, W_ref,W_cp]
+        W_calulated_pass = False
+        for W in ls_weight:
+            if len(W) == 0:
+                tkinter.messagebox.showwarning('Using default values', 'Missing values in entries. Program runs by default weights!')
+                W_calulated_pass = True
+                self.corr_rs = self.RS.arrange_ROOM()
+                break
+        if W_calulated_pass is True:
+            self.corr_rs = self.RS.arrange_ROOM(ls_weight)
         tkinter.messagebox.showinfo('Program done', 'FINISH COMPUTE CORR !')
         print("FINISH COMPUTE CORR")
     def fun_BT3(self):
