@@ -5,8 +5,11 @@ from PIL import Image, ImageTk
 import os
 from tkinter import filedialog as fd
 from Rec_main import RS
+from Rec_main import replace_zero
+from Rec_main import more_than_one
 import threading
 import pandas as pd
+import time
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -96,59 +99,67 @@ class App(customtkinter.CTk):
         self.gender_switch = customtkinter.CTkSwitch(master=self.frame, text="No/Yes")
         self.gender_switch.place(relx=0.3, rely=0.6, anchor=tkinter.CENTER)
 
+        self.sliderLabel = customtkinter.CTkLabel(master=self.frame,
+                                                  text="Constrast",width=50)
+        self.sliderLabel.place(relx=0.57, rely=0.6, anchor=tkinter.E)
+
+        self.constrast_switch = customtkinter.CTkSwitch(master=self.frame, text="False/True")
+        self.constrast_switch.place(relx=0.67, rely=0.6, anchor=tkinter.CENTER)
+
+        #self.slider_value = 0
+        #self.slider_contrast = customtkinter.CTkSlider(master=self.frame, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 500)
+        #self.slider_contrast.place(relx=0.75, rely=0.6, anchor=tkinter.E)
+
         self.roomLabel = customtkinter.CTkLabel(master=self.frame,
                                                     text="Number of people", width=50)
-        self.roomLabel.place(relx=0.17, rely=0.65, anchor=tkinter.E)
+        self.roomLabel.place(relx=0.17, rely=0.70, anchor=tkinter.E)
 
-        self.radio_var = tkinter.IntVar(value=0)
+        self.radio_var = tkinter.IntVar(value=3)
         self.room2Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                            variable=self.radio_var,
                                                            value=2, text = "2")
-        self.room2Radio.place(relx=0.27, rely=0.65, anchor=tkinter.E)
+        self.room2Radio.place(relx=0.27, rely=0.70, anchor=tkinter.E)
 
         self.room3Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                       variable=self.radio_var,
                                                       value=3, text="3")
-        self.room3Radio.place(relx=0.37, rely=0.65, anchor=tkinter.E)
+        self.room3Radio.place(relx=0.37, rely=0.70, anchor=tkinter.E)
 
         self.room4Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                        variable=self.radio_var,
                                                        value=4, text="4")
-        self.room4Radio.place(relx=0.47, rely=0.65, anchor=tkinter.E)
+        self.room4Radio.place(relx=0.47, rely=0.70, anchor=tkinter.E)
 
         self.room5Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                        variable=self.radio_var,
                                                        value=5, text="5")
-        self.room5Radio.place(relx=0.57, rely=0.65, anchor=tkinter.E)
+        self.room5Radio.place(relx=0.57, rely=0.70, anchor=tkinter.E)
 
         self.room6Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                        variable=self.radio_var,
                                                        value=6, text="6")
-        self.room6Radio.place(relx=0.67, rely=0.65, anchor=tkinter.E)
+        self.room6Radio.place(relx=0.67, rely=0.70, anchor=tkinter.E)
 
         self.room7Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                        variable=self.radio_var,
                                                        value=7, text="7")
-        self.room7Radio.place(relx=0.77, rely=0.65, anchor=tkinter.E)
+        self.room7Radio.place(relx=0.77, rely=0.70, anchor=tkinter.E)
 
         self.room8Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                        variable=self.radio_var,
                                                        value=8, text="8")
-        self.room8Radio.place(relx=0.87, rely=0.65, anchor=tkinter.E)
+        self.room8Radio.place(relx=0.87, rely=0.70, anchor=tkinter.E)
 
         self.room9Radio = customtkinter.CTkRadioButton(master=self.frame,
                                                        variable=self.radio_var,
                                                        value=9, text="9")
-        self.room9Radio.place(relx=0.97, rely=0.65, anchor=tkinter.E)
+        self.room9Radio.place(relx=0.97, rely=0.70, anchor=tkinter.E)
 
 
-        self.sliderLabel = customtkinter.CTkLabel(master=self.frame,
-                                                  text="Constrast",width=50)
-        self.sliderLabel.place(relx=0.17, rely=0.75, anchor=tkinter.E)
 
-        self.slider_value = 0
-        self.slider_contrast = customtkinter.CTkSlider(master=self.frame, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 500)
-        self.slider_contrast.place(relx=0.55, rely=0.75, anchor=tkinter.CENTER)
+        self.timer = customtkinter.CTkLabel(master=self.frame,
+                                                  text="")
+        self.timer.place(relx=0.75, rely=0.75, anchor=tkinter.CENTER)
 
         self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550)
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
@@ -202,36 +213,43 @@ class App(customtkinter.CTk):
         stop_event = threading.Event()
         stop_event.set()
         
-
+    def timer_start(self):
+        #time_current = int(self.timer['text']) + 1
+        self.timer.configure(text="Running...   (dont' push any button)")
+    def timer_end(self):
+        self.timer.configure(text="Done. You can save file using save button")
 
     def fun_BT2(self):
         if self.filename == None:
             tkinter.messagebox.showwarning('Missing file path', 'This button works if there is a file !')
             return
+        st = time.time()
+        self.timer_start()
         self.RS = RS(df_path = self.filename)
-        # self.corr_rs = self.RS.compute_all_corr()
-        W_hob = self.hobbyentry.get()
-        food_value = self.foodentry.get()
-        W_Bio_per = self.personalityentry.get()
-        W_hom = self.hometownentry.get()
-        W_cp = self.cleanliness_privacy_entry.get()
-        W_ref = self.refentry.get()
-        W_food = self.foodentry.get()
-        gender_switch_value = self.gender_switch.get() # Value 0 or 1
-        contrast_value = float(self.slider_contrast.get()/100)
+        split_gender = self.gender_switch.get() # Value 0 for not or 1 for yes
+        contrast_value = self.constrast_switch.get()
         room_size = self.radio_var.get()
-        ls_weight = [W_hom,W_Bio_per,W_hob, W_ref,W_cp]
-        W_calulated_pass = False
-        for W in ls_weight:
-            if len(W) == 0:
-                tkinter.messagebox.showwarning('Using default values', 'Missing values in entries. Program runs by default weights!')
-                W_calulated_pass = True
-                self.corr_rs = self.RS.arrange_ROOM()
-                break
-        if W_calulated_pass is True:
-            self.corr_rs = self.RS.arrange_ROOM(ls_weight)
-        tkinter.messagebox.showinfo('Program done', 'FINISH COMPUTE CORR !')
+        ls_weight = [   self.hometownentry.get(),
+                        self.personalityentry.get(),
+                        self.foodentry.get(), 
+                        self.hobbyentry.get(), 
+                        self.refentry.get(),
+                        self.cleanliness_privacy_entry.get()]
+        check = more_than_one(ls_weight)
+        if check is False:
+            tkinter.messagebox.showwarning('More than 1', 'The sum of all weights more than 1 or smaller than 0!')
+            return
+        ls_weight = replace_zero(ls_weight)
+        if split_gender == 1:
+            self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, split_gender = True)
+        else:
+            self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, split_gender = False)
+        et = time.time()
+        tkinter.messagebox.showinfo('Program done', "FINISH COMPUTE CORR! Timer: {}".format(et - st))
+        self.timer_end()
         print("FINISH COMPUTE CORR")
+
+        
     def fun_BT3(self):
         if self.corr_rs.empty:
             tkinter.messagebox.showwarning('Need to run first', 'There are no file to save !')
@@ -239,9 +257,11 @@ class App(customtkinter.CTk):
         print("start running")
         files = [('All Files', '*.*'),
              ('Python Files', '*.py'),
-             ('Text Document', '*.txt')]
+             ('Text Document', '*.txt'),
+             ('CSV file', '*.csv')]
         file = fd.asksaveasfile(filetypes = files, defaultextension = files)
-        self.corr_rs.to_csv(file)
+        # print(file.name)
+        self.corr_rs.to_csv(file.name)
     def slider_value_get(self, val):
         self.slider_value = val
     def on_closing(self, event=0):

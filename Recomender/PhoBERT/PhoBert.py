@@ -23,6 +23,9 @@ class PhoBERT:
     self.stopwords = []
     self.v_phobert = None
     self.v_tokenizer = None
+    self.load_stopwords()
+    self.load_bert()
+
   def load_stopwords(self, stopword_path = "Recomender/PhoBERT/vietnamese_stopwords.txt"):
     self.stopwords = []
     with open(stopword_path, encoding='utf-8') as f:
@@ -87,9 +90,9 @@ class PhoBERT:
     mean_pooled = mean_pooled.detach().numpy()
     # Size: (number of texts, 768)
     return mean_pooled
+
   def text2vec(self, rows):
-    self.load_stopwords()
-    self.load_bert()
+
     features = self.make_bert_features(rows)
     return features
 
@@ -97,4 +100,7 @@ if __name__ == '__main__':
   # Gọi hàm text2Vec
   data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Arranging-rooms-based-on-student-information\\pre_processing\\Data_Augmentation_10k.csv")
   pho = PhoBERT()
-  vectors = pho.text2vec(data.iloc[1,3])
+  # print(data.iloc[1,6])
+  vectors = pho.text2vec(data.iloc[:50,6])
+
+  print("FINISH")
