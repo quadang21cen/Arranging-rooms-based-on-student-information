@@ -19,7 +19,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 class App(customtkinter.CTk):
 
-    APP_NAME = "RS.py"
+    APP_NAME = "Arrange room"
     WIDTH = 900
     HEIGHT = 600
 
@@ -46,7 +46,7 @@ class App(customtkinter.CTk):
         self.frame_0.grid_columnconfigure(1, weight=1)
 
         self.label_1 = customtkinter.CTkLabel(master=self.frame_0, width=200, height=60,
-                                               text="Choosing weight for recommender system")
+                                               text="__WEIGHT__")
         self.label_1.place(relx=0.5, rely=0.15, anchor=tkinter.CENTER)
 
         self.hobbyLabel = customtkinter.CTkLabel(master=self.frame_0,
