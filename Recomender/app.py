@@ -91,6 +91,13 @@ class App(customtkinter.CTk):
 
         self.refentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
         self.refentry.place(relx=0.8, rely=0.85, anchor=tkinter.W)
+        
+        self.start_from_label = customtkinter.CTkLabel(master=self.frame_0,
+                                              text="Start from room",width=50)
+        self.start_from_label.place(relx=0.7, rely=0.90, anchor=tkinter.CENTER)
+
+        self.start_from_entry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
+        self.start_from_entry.place(relx=0.8, rely=0.95, anchor=tkinter.W)
 
         self.genderLabel = customtkinter.CTkLabel(master=self.frame,
                                                   text="Gender Separation?")
@@ -159,10 +166,11 @@ class App(customtkinter.CTk):
 
         self.timer = customtkinter.CTkLabel(master=self.frame,
                                                   text="")
-        self.timer.place(relx=0.75, rely=0.75, anchor=tkinter.CENTER)
+        self.timer.place(relx=0.5, rely=0.75, anchor=tkinter.CENTER)
 
         self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550)
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
+        self.progressbar['value'] += 100
 
         self.frame_1 = customtkinter.CTkFrame(master=self.frame, width=250, height=50, corner_radius=15, fg_color=("white", "gray38"),)
         self.frame_1.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
@@ -240,6 +248,10 @@ class App(customtkinter.CTk):
             tkinter.messagebox.showwarning('More than 1', 'The sum of all weights more than 1 or smaller than 0!')
             return
         ls_weight = replace_zero(ls_weight)
+        
+        # Vừa mới add
+        start_from_room = self.start_from_entry.get()
+        
         if split_gender == 1:
             self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, split_gender = True)
         else:
