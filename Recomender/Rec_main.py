@@ -51,11 +51,14 @@ class RS:
             corr_rs.append(row)
         return corr_rs
 
-    def enumLs(self, lst):
+    def enumLs(self, lst, constract = False):
         ls = []
         for index,Val in zip(self.ID,lst):
             ls.append([Val,index])
-        ls.sort()
+        if constract is False:
+            ls.sort()
+        else:
+            ls.sort(reverse= True)
         return ls
 
     def to_Room(self, groups,start_with = 5):
@@ -69,7 +72,7 @@ class RS:
         self.current_ROOM = start_with
         return to_df
 
-    def grouping(self,np_data,max_size = 4, constract = False):
+    def grouping(self,np_data,max_size = 4,constract = False):
         len_data = len(np_data) - 1
         in_room = []
         dorm = []
@@ -79,7 +82,7 @@ class RS:
                 curr_size = 1
                 room.append(id)
                 in_room.append(id)
-                new_corr = self.enumLs(corr)
+                new_corr = self.enumLs(corr,constract = constract)
                 i = -1
                 while curr_size < max_size:
                     if new_corr[i][1] not in in_room:
@@ -121,26 +124,26 @@ class RS:
         FaD = self.data["food_drink"]
         Vec_FaD = self.Pho_BERT.text2vec(FaD)
         CORR_FaD = self.check_text(self.corr_cosine(Vec_FaD),FaD)
-        return CORR_FaD
-        Cleanliess and Privacy
+        # return CORR_FaD
+        # Cleanliess and Privacy
         VEC_cp = self.normalized(self.data[["Cleanliess","Privacy"]].to_numpy())
         CORR_cp = self.corr_cosine(VEC_cp)
-        # return CORR_cp
+        
 
         res = CORR_city*W_hom + CORR_bio*W_Bio_per + CORR_FaD*W_FaD + CORR_hob*W_hob + CORR_Ref*W_ref + CORR_cp*W_cp + CORR_FaD*0.1
-        df_corr = pd.DataFrame(data =res ,index=self.data.index,columns=self.data.index)
-        # df_corr.to_csv("Corr_Matrix\\new_corr_noname.csv")
-        df_corr.to_csv("DEMO.csv")
-        return df_corr
+        # df_corr = pd.DataFrame(data =res ,index=self.data.index,columns=self.data.index)
+        # # df_corr.to_csv("Corr_Matrix\\new_corr_noname.csv")
+        # df_corr.to_csv("DEMO.csv")
+        return res
 
     def normalized(self,vec):
         min_max_scaler = preprocessing.MinMaxScaler()
         return min_max_scaler.fit_transform(vec)
 
-    def arrange_ROOM(self,weight=[0.1,0.2,0.2,0.2,0.1,0,1], split_gender = False, room_size = 3):     # run this funtion to finish the project
+    def arrange_ROOM(self,weight=[0.1,0.2,0.2,0.2,0.1,0,1], split_gender = False, room_size = 3, constract = False):     # run this funtion to finish the project
         if split_gender is False:
             df_corr = self.compute_all_corr()
-            df_group = self.grouping(df_corr,max_size=room_size)
+            df_group = self.grouping(df_corr,max_size=room_size,constract = constract)
             to_ROOM = self.to_Room(df_group,start_with=1)
             to_ROOM.to_csv("Result\\Room_result_split_FALSE.csv",index = False)
             return to_ROOM
@@ -149,14 +152,14 @@ class RS:
             self.data = self.data[self.data['Sex'] == 'Nữ']
             self.ID = self.data.iloc[:,0]
             df_corr = self.compute_all_corr()
-            df_group = self.grouping(df_corr,max_size=room_size)
+            df_group = self.grouping(df_corr,max_size=room_size,constract = constract)
             ROOM_female = self.to_Room(df_group,start_with= 5)
             # ROOM_female.to_csv("Result\\Room_result_FEMALE.csv",index = False)
 
             self.data = template[template['Sex'] == 'Nam']
             self.ID = self.data.iloc[:,0]
             df_corr = self.compute_all_corr()
-            df_group = self.grouping(df_corr,max_size=room_size)
+            df_group = self.grouping(df_corr,max_size=room_size,constract = constract)
             ROOM_male = self.to_Room(df_group,start_with= self.current_ROOM)
             # ROOM_male.to_csv("Result\\Room_result_MALE.csv",index = False)
             final_ROOM = pd.concat([ROOM_male,ROOM_female]).sort_values('id')
@@ -164,36 +167,7 @@ class RS:
             
             print(final_ROOM)
             return final_ROOM
-            # final_ROOM.to_csv("Result\\Room_result.csv")
-
-
-            # # execute female
-            # self.data_female = self.data[self.data['Sex'] == 'nữ']
-            # df_corr = self.compute_all_corr()
-            # df_group = self.grouping(df_corr,max_size=room_size)
-            # ROOM_female = self.to_Room(df_group)         # to_csv("Result\\Room_result_FEMALE.csv",index = False)
-            # ROOM_female.to_csv("Result\\Room_result_FEMALE.csv",index = False)
-            # # print(ROOM_female)
-                     # to_csv("Result\\Room_result_FEMALE.csv",index = False)
-            # # print("--------------")
-            # # print(ROOM_male)
-            # ROOM_male.to_csv("Result\\Room_result_MALE.csv",index = False)
-            # final_ROOM = ROOM_female.add(ROOM_male)
-            # print(final_ROOM)
-            # final_ROOM.to_csv("Result\\Room_result.csv")
-
-
-            # room_female = self.to_Room(df_group)
-            # self.data = template
-            # female_df = self.data[self.data['Sex'] == 'Nữ']
-            # df_corr = self.compute_all_corr()
-            # df_group = self.grouping(df_corr)
-            # room_male = self.to_Room(df_group)
             
-            # res = room_female.add(room_male, fill_value=0)
-            # res = res.sort_values('id')
-            # print(res)
-            # self.to_Room(df_group).to_csv("Result\\Room_result_MALE.csv",index = False)
 def replace_zero(ls_weight):
     count_zero = 0
     count_not_zero = 0
@@ -237,12 +211,7 @@ if __name__ == "__main__":
     st = time.time()
     data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\FINAL_Data_set_FixHW.csv", encoding='utf-8')
     RS = RS(data)
-    res = RS.arrange_ROOM(split_gender = True)
-    
-    
-
-
-
+    res = RS.arrange_ROOM(split_gender = True,constract = False)
 
     et = time.time()
     elapsed_time = et - st

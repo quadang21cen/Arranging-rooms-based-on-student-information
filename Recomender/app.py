@@ -92,12 +92,6 @@ class App(customtkinter.CTk):
         self.refentry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
         self.refentry.place(relx=0.8, rely=0.85, anchor=tkinter.W)
         
-        self.start_from_label = customtkinter.CTkLabel(master=self.frame_0,
-                                              text="Start from room",width=50)
-        self.start_from_label.place(relx=0.7, rely=0.90, anchor=tkinter.CENTER)
-
-        self.start_from_entry = customtkinter.CTkEntry(master=self.frame_0, corner_radius=6, width=100)
-        self.start_from_entry.place(relx=0.8, rely=0.95, anchor=tkinter.W)
 
         self.genderLabel = customtkinter.CTkLabel(master=self.frame,
                                                   text="Gender Separation?")
@@ -107,11 +101,18 @@ class App(customtkinter.CTk):
         self.gender_switch.place(relx=0.3, rely=0.6, anchor=tkinter.CENTER)
 
         self.sliderLabel = customtkinter.CTkLabel(master=self.frame,
-                                                  text="Constrast",width=50)
-        self.sliderLabel.place(relx=0.57, rely=0.6, anchor=tkinter.E)
+                                                  text="Contrast",width=50)
+        self.sliderLabel.place(relx=0.45, rely=0.6, anchor=tkinter.E)
 
         self.constrast_switch = customtkinter.CTkSwitch(master=self.frame, text="False/True")
-        self.constrast_switch.place(relx=0.67, rely=0.6, anchor=tkinter.CENTER)
+        self.constrast_switch.place(relx=0.55, rely=0.6, anchor=tkinter.CENTER)
+
+        self.start_from_label = customtkinter.CTkLabel(master=self.frame,
+                                              text="Start from room",width=50)
+        self.start_from_label.place(relx=0.75, rely=0.6, anchor=tkinter.E)
+
+        self.start_from_entry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=100)
+        self.start_from_entry.place(relx=0.85, rely=0.6, anchor=tkinter.CENTER)
 
         #self.slider_value = 0
         #self.slider_contrast = customtkinter.CTkSlider(master=self.frame, orient='horizontal', from_=0, to=100, number_of_steps=100, command=self.slider_value_get, width= 500)
@@ -170,7 +171,7 @@ class App(customtkinter.CTk):
 
         self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550)
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
-        self.progressbar['value'] += 100
+
 
         self.frame_1 = customtkinter.CTkFrame(master=self.frame, width=250, height=50, corner_radius=15, fg_color=("white", "gray38"),)
         self.frame_1.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
@@ -235,7 +236,7 @@ class App(customtkinter.CTk):
         self.timer_start()
         self.RS = RS(df_path = self.filename)
         split_gender = self.gender_switch.get() # Value 0 for not or 1 for yes
-        contrast_value = self.constrast_switch.get()
+        contrast = self.constrast_switch.get()
         room_size = self.radio_var.get()
         ls_weight = [   self.hometownentry.get(),
                         self.personalityentry.get(),
@@ -251,11 +252,15 @@ class App(customtkinter.CTk):
         
         # Vừa mới add
         start_from_room = self.start_from_entry.get()
-        
-        if split_gender == 1:
-            self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, split_gender = True)
+        if start_from_room is '':
+            start_from_room = 1
         else:
-            self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, split_gender = False)
+            start_from_room = int(start_from_room)
+        # starting running
+        if split_gender == 1:
+            self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, split_gender = True,constract =contrast)
+        else:
+            self.corr_rs = self.RS.arrange_ROOM(ls_weight, room_size=room_size, split_gender = False,constract = contrast)
         et = time.time()
         tkinter.messagebox.showinfo('Program done', "FINISH COMPUTE CORR! Timer: {}".format(et - st))
         self.timer_end()
