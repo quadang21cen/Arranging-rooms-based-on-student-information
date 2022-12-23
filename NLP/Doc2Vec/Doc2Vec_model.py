@@ -292,61 +292,40 @@ class Doc2Vec_Class:
         return similar_text
 
 if __name__ == '__main__':
-    # file_pd = pd.read_csv("Student_Ins.csv", encoding='utf-8')
-    # print(file_pd.columns)
-    # file_pd.drop(columns=['Unnamed: 0', 'Unnamed: 0.1', 'Unnamed: 0.1.1', 'Unnamed: 0.1.1.1',
-    #    'Unnamed: 0.1.1.1.1', 'Unnamed: 0.1.1.1.1.1', 'Unnamed: 0.1.1.1.1.1.1', 'Unnamed: 12'], axis=1, inplace = True)
-    # #features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-    # #                         "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
-    # features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-    #                           "smoking", "refer_roommate", "Cleanliess", "Privacy"]
-    # file_pd.columns = features
-    doc1 = "Tôi la ai"
-    doc2 = "Tôi là cái gì"
-    doc_list = ["Tôi la ai", "Tôi là cái gì", "Toi la the nao"]
+    print('Start')
+    doc1 = "thích đá bóng và nghe nhạc, xem phim"
+    doc2 = "thích thể thao và giải trí"
     doc2vec = Doc2Vec_Class()
     # doc2vec.train(df = file_pd, feature_list = features, save_folder = "model", vector_size = 100, window = 2, epoch = 100)
-    doc2vec.load("./{}/size {} words {}.model".format("Bio_personality", 20, 5))
-
-    # Pairwise với gensim doc2vec
-    print(doc2vec.pairwise_unknown_docs(doc_list))
-
-    # Lấy tât cả vector đã train trên model, dùng hàm này
-    dv_vector = doc2vec.load_to_matrix()
-    print(dv_vector)
-
-    # Pairwise với vector
-    matrix = doc2vec.load_to_matrix()
-    print(doc2vec.pairwise_vectors(matrix))
+    doc2vec.load("NLP/Doc2Vec/{}/size {} words {}.model".format("Bio_personality", 20, 5))
 
     # So sánh 2 đoạn văn bản doc1 và doc2 dùng hàm của gensim doc2vec theo cách tính cosine similarity ( Chuẩn hơn )
-    doc_ex1 = "Tôi là ai"
-    doc_ex2 = "Bạn đang làm cái gì "
-    print(doc2vec.compare_two_unknown_docs(doc_ex1, doc_ex2))
+    doc_ex1 = "Hướng ngoại, nói chuyện"
+    doc_ex2 = "Hướng ngoại 65% và hướng nội 35%, tôi thích nói chuyện với mọi người nhưng đồng thời tôi cũng có những lúc thích một mình"
 
     # So sánh 2 đoạn văn bản doc1 và doc2 dùng hàm của sklearn.pairwise theo cách tính cosine similarity ( càng thấp thì càng gần giống )
     print(doc2vec.distance(doc_ex1, doc_ex2))
 
-    # Nếu muốn chuyển text thành vector, dùng hàm này (epochs càng nhiều độ chênh lệch giữa vector của cùng 1 text càng ngắn,
-    # alpha là learning rate)
-    vector = doc2vec.infer_vector_model(doc1, epochs = 50, alpha = 0.025, min_alpha=0.0001)
-    print(vector)
+    # # Nếu muốn chuyển text thành vector, dùng hàm này (epochs càng nhiều độ chênh lệch giữa vector của cùng 1 text càng ngắn,
+    # # alpha là learning rate)
+    # vector = doc2vec.infer_vector_model(doc1, epochs = 50, alpha = 0.025, min_alpha=0.0001)
+    # print(vector)
 
-    # Có thể dùng để recommend ( đề nghị ) các đoạnn văn bản giống nhau nếu dùng hàm này ( topn dùng để recommend bao nhiêu ví dụ gần giống với đoạn văn bản doc)
-    similarity_docs = doc2vec.find_most_similar(doc1, topn=5)
-    similarity_docs_id = [item[0] for item in similarity_docs]
-    print(similarity_docs_id)
+    # # Có thể dùng để recommend ( đề nghị ) các đoạnn văn bản giống nhau nếu dùng hàm này ( topn dùng để recommend bao nhiêu ví dụ gần giống với đoạn văn bản doc)
+    # similarity_docs = doc2vec.find_most_similar(doc1, topn=5)
+    # similarity_docs_id = [item[0] for item in similarity_docs]
+    # print(similarity_docs_id)
 
-    # Tính similarity dựa vào khoảng cách với vector
-    text_list = ["Document 1", "Document 2"]
-    vectors_for_unknown_text = [doc2vec.infer_vector_model(text) for text in text_list]
-    cosine, manhattan, euclidean = doc2vec.measure_distance(dv_vector)
-    # cosine, manhattan, euclidean = doc2vec.measure_distance(vectors_for_unknown_text)
-    cosine_similar_score = 1 - cosine
-    print("Độ tương đồng của 2 văn bản:", cosine_similar_score)
+    # # Tính similarity dựa vào khoảng cách với vector
+    # text_list = ["Document 1", "Document 2"]
+    # vectors_for_unknown_text = [doc2vec.infer_vector_model(text) for text in text_list]
+    # cosine, manhattan, euclidean = doc2vec.measure_distance(dv_vector)
+    # # cosine, manhattan, euclidean = doc2vec.measure_distance(vectors_for_unknown_text)
+    # cosine_similar_score = 1 - cosine
+    # print("Độ tương đồng của 2 văn bản:", cosine_similar_score)
 
-    # doc2vec.calculate_inertia()
+    # # doc2vec.calculate_inertia()
 
-    # Clustering các đoạn văn bản dùng Kmeans và PCA
-    # Giá trị silhouette từ [-1; 1] : Số 1 là tốt nhất, -1 là tệ nhất, 0 là trùng nhau
-    doc2vec.semantic_clustering(k=49)
+    # # Clustering các đoạn văn bản dùng Kmeans và PCA
+    # # Giá trị silhouette từ [-1; 1] : Số 1 là tốt nhất, -1 là tệ nhất, 0 là trùng nhau
+    # doc2vec.semantic_clustering(k=49)

@@ -16,7 +16,7 @@ from pathlib import Path
 import pickle
 class TF_IDF_class:
     def __init__(self) -> None:
-        self.stopwords_path = "vietnamese_stopwords.txt"
+        self.stopwords_path = "NLP\\vietnamese_stopwords.txt"
     def get_stopwords_list(self, stop_file_path):
         """load stop words """
 
@@ -121,150 +121,195 @@ class TF_IDF_class:
     def predict_text(self,text_list, tfidf, k=2):
         kmeans = KMeans(n_clusters=k).fit(tfidf)
         return kmeans.predict(tfidf.transform(text_list))
-import pandas as pd
-df = pd.read_csv('Student_Ins.csv')
-features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
-                             "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
-df.columns = features
 
-
-corpus = ["tôi thích bơi lội,nghe nhạc, và đọc sách",
-            "Toi thich da bong"
-           ]
-import random
-df["labels"] = [random.randint(0, 3) for _ in range(len(df['Bio_personality']))]
-
-
-#label_id_df = df['labels'].drop_duplicates()
-#label_to_id = dict(label_id_df.values)
-#id_to_label = dict(label_id_df[['label_id','Label']].values)
-from matplotlib import pyplot as plt
-def plot():
-    fig = plt.figure(figsize=(10,10))
-    df.groupby('labels').Bio_personality.count().sort_values().plot.barh(ylim =0, title= 'Number of records per label\n')
-    plt.xlabel('Number of records.')
-    #plt.show()
-plot()
-# stop_words_list = get_stopwords_list(".\\vietnamese_stopwords.txt")
-# vect = TfidfVectorizer(tokenizer=tokenize_vn, stop_words=stop_words_list, lowercase = True)
-# tfidf = vect.fit_transform(corpus)
-
-tf_idf = TF_IDF_class()
-# Tao tu dien
-tf_idf.build_vocab_save(df['Bio_personality'], save_folder="Bio_personality", save_file="tfidf.pickle")
-tfidf_array = tf_idf.text2vec(df['Bio_personality'], vect_file = "Bio_personality/tfidf.pickle")
-vect, tfidf = tf_idf.transform_vector(df['Bio_personality'])
 
 import pandas as pd
-feature_df = pd.DataFrame(tfidf_array,
-                        columns=vect.get_feature_names_out())
+import numpy as np
 
-feature_df.to_csv("test.csv")
 
-matrix = tf_idf.text2vec(df['Bio_personality'])
 
-# Sự không tương đồng giữa các văn bản
-print("cosine")
-jac_dissimilarity = tf_idf.pairwise(matrix, metric='cosine')
-print(jac_dissimilarity)
-jac_dissimilarity_pd = pd.DataFrame(jac_dissimilarity, columns = [*range(len(matrix))])
-print(jac_dissimilarity_pd)
-#print("jaccard similarity")
-#jac_similarity_pd = pd.DataFrame(tf_idf.pairwise_jac(matrix), columns = [*range(len(matrix))])
-#print(jac_similarity_pd)
 
-# Sự tương đồng giữa các văn bản
-print("Cosine similarity")
-cosine_similarity = tf_idf.pairwise_cosine(matrix)
-cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns=[*range(len(matrix))])
-print(cosine_similarity_pd)
+text1 = "Hướng ngoại, nói chuyện"
+
+text2 = "Hướng ngoại 65% và hướng nội 35%, tôi thích nói chuyện với mọi người nhưng đồng thời tôi cũng có những lúc thích một mình"
+
+TF = TF_IDF_class()
+tfidf_array = TF.text2vec([text1,text2])
+print(TF.pairwise_cosine(tfidf_array))
+
+
+# data = pd.read_csv('C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\FINAL_Data_set_FixHW.csv')
+# tf_idf = TF_IDF_class()
+# tf_idf.build_vocab_save(data['Bio_personality'])
+# tfidf_array = tf_idf.text2vec(data['Bio_personality'])
+# corr_matrix = list
+# refer_text = data['refer_roommate'].to_numpy()
+# text_to = (data['Bio_personality'] + " " + data['hob_inter'] + " " + data['food_drink']).to_numpy()
+# for i in range(0,len(refer_text)):
+#     temp_arr = text_to
+#     temp_arr[i] = refer_text[i]
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import pandas as pd
+# df = pd.read_csv('Student_Ins.csv')
+# features = ["Timestamp", "Name", "Sex", "Hometown", "Major", "Bio_personality", "food_drink", "hobby_interests",
+#                              "smoking", "refer_roommate", "Cleanliess", "Privacy", "Unnamed"]
+# df.columns = features
+
+
+# corpus = ["tôi thích bơi lội,nghe nhạc, và đọc sách",
+#             "Toi thich da bong"
+#            ]
+# import random
+# df["labels"] = [random.randint(0, 3) for _ in range(len(df['Bio_personality']))]
+
+
+# #label_id_df = df['labels'].drop_duplicates()
+# #label_to_id = dict(label_id_df.values)
+# #id_to_label = dict(label_id_df[['label_id','Label']].values)
+# from matplotlib import pyplot as plt
+# def plot():
+#     fig = plt.figure(figsize=(10,10))
+#     df.groupby('labels').Bio_personality.count().sort_values().plot.barh(ylim =0, title= 'Number of records per label\n')
+#     plt.xlabel('Number of records.')
+#     #plt.show()
+# plot()
+# # stop_words_list = get_stopwords_list(".\\vietnamese_stopwords.txt")
+# # vect = TfidfVectorizer(tokenizer=tokenize_vn, stop_words=stop_words_list, lowercase = True)
+# # tfidf = vect.fit_transform(corpus)
+
+# tf_idf = TF_IDF_class()
+# # Tao tu dien
+# tf_idf.build_vocab_save(df['Bio_personality'], save_folder="Bio_personality", save_file="tfidf.pickle")
+# tfidf_array = tf_idf.text2vec(df['Bio_personality'], vect_file = "Bio_personality/tfidf.pickle")
+# vect, tfidf = tf_idf.transform_vector(df['Bio_personality'])
+
+# import pandas as pd
+# feature_df = pd.DataFrame(tfidf_array,
+#                         columns=vect.get_feature_names_out())
+
+# feature_df.to_csv("test.csv")
+
+# matrix = tf_idf.text2vec(df['Bio_personality'])
+
+# # Sự không tương đồng giữa các văn bản
+# print("cosine")
+# jac_dissimilarity = tf_idf.pairwise(matrix, metric='cosine')
+# print(jac_dissimilarity)
+# jac_dissimilarity_pd = pd.DataFrame(jac_dissimilarity, columns = [*range(len(matrix))])
+# print(jac_dissimilarity_pd)
+# #print("jaccard similarity")
+# #jac_similarity_pd = pd.DataFrame(tf_idf.pairwise_jac(matrix), columns = [*range(len(matrix))])
+# #print(jac_similarity_pd)
+
+# # Sự tương đồng giữa các văn bản
+# print("Cosine similarity")
+# cosine_similarity = tf_idf.pairwise_cosine(matrix)
+# cosine_similarity_pd = pd.DataFrame(cosine_similarity, columns=[*range(len(matrix))])
+# print(cosine_similarity_pd)
 # # Clustering KMeans
 # tf_idf.semantic_clustering(k=5, tfidf=tfidf)
 
 
 
-# Đánh giá độ chính xác bằng text classification
+# # Đánh giá độ chính xác bằng text classification
 
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.naive_bayes import MultinomialNB
-from xgboost import XGBClassifier
-from sklearn.svm import LinearSVC
-from sklearn.model_selection import cross_val_score
-models = [
-    RandomForestClassifier(n_estimators=100, max_depth=5, random_state=0),
-    XGBClassifier(),
-    LinearSVC(),
-    MultinomialNB()
-]
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.naive_bayes import MultinomialNB
+# from xgboost import XGBClassifier
+# from sklearn.svm import LinearSVC
+# from sklearn.model_selection import cross_val_score
+# models = [
+#     RandomForestClassifier(n_estimators=100, max_depth=5, random_state=0),
+#     XGBClassifier(),
+#     LinearSVC(),
+#     MultinomialNB()
+# ]
 
-labels = df.labels
+# labels = df.labels
 
-cross_value_scored = []
-for model in models:
-    model_name = model.__class__.__name__
-    accuracies= cross_val_score(model, matrix, labels, scoring = 'accuracy', cv = 5)
-    for accuracy in accuracies:
-        cross_value_scored.append((model_name, accuracy))
+# cross_value_scored = []
+# for model in models:
+#     model_name = model.__class__.__name__
+#     accuracies= cross_val_score(model, matrix, labels, scoring = 'accuracy', cv = 5)
+#     for accuracy in accuracies:
+#         cross_value_scored.append((model_name, accuracy))
 
-df_cv = pd.DataFrame(cross_value_scored, columns =['model_name', 'accuracy'])
-acc = pd.concat([df_cv.groupby('model_name').accuracy.mean(),df_cv.groupby('model_name').accuracy.std()], axis= 1,ignore_index=True)
-acc.columns = ['Mean Accuracy', 'Standard deviation']
-print(acc)
+# df_cv = pd.DataFrame(cross_value_scored, columns =['model_name', 'accuracy'])
+# acc = pd.concat([df_cv.groupby('model_name').accuracy.mean(),df_cv.groupby('model_name').accuracy.std()], axis= 1,ignore_index=True)
+# acc.columns = ['Mean Accuracy', 'Standard deviation']
+# print(acc)
 
-# hyperparameter tunning of XGBClassifier
-clf_xgb = XGBClassifier()
-# hypermeter setting
-param_dist = {'n_estimators': np.random.randint(150, 500,100),
-              'learning_rate': [0.01,0.1,0.2,0.3,0.4, 0.59],
-              'max_depth': [3, 4, 5, 6, 7, 8, 9],
-              'min_child_weight': [1, 2, 3, 4]
-             }
-from sklearn.model_selection import KFold
-kfold_5 = KFold(shuffle = True, n_splits = 5)
+# # hyperparameter tunning of XGBClassifier
+# clf_xgb = XGBClassifier()
+# # hypermeter setting
+# param_dist = {'n_estimators': np.random.randint(150, 500,100),
+#               'learning_rate': [0.01,0.1,0.2,0.3,0.4, 0.59],
+#               'max_depth': [3, 4, 5, 6, 7, 8, 9],
+#               'min_child_weight': [1, 2, 3, 4]
+#              }
+# from sklearn.model_selection import KFold
+# kfold_5 = KFold(shuffle = True, n_splits = 5)
 
-from sklearn.model_selection import RandomizedSearchCV
-clf = RandomizedSearchCV(clf_xgb,
-                         param_distributions = param_dist,
-                         cv = kfold_5,
-                         n_iter = 5,
-                         scoring = 'roc_auc',
-                         verbose = 3,
-                         n_jobs = -1)
+# from sklearn.model_selection import RandomizedSearchCV
+# clf = RandomizedSearchCV(clf_xgb,
+#                          param_distributions = param_dist,
+#                          cv = kfold_5,
+#                          n_iter = 5,
+#                          scoring = 'roc_auc',
+#                          verbose = 3,
+#                          n_jobs = -1)
 
-# spliting the data into test and train
-x_train, x_test, y_train, y_test = train_test_split(matrix, labels, random_state=0, test_size=0.2)
+# # spliting the data into test and train
+# x_train, x_test, y_train, y_test = train_test_split(matrix, labels, random_state=0, test_size=0.2)
 
-# creating and fiting the instance of the xgb classifier
-xgb = XGBClassifier()
-xgb.fit(x_train,y_train)
+# # creating and fiting the instance of the xgb classifier
+# xgb = XGBClassifier()
+# xgb.fit(x_train,y_train)
 
-XGBClassifier(base_score=0.5, booster='gbtree', colsample_bylevel=1,
-              colsample_bynode=1, colsample_bytree=1, gamma=0, gpu_id=-1,
-              importance_type='gain', interaction_constraints='',
-              learning_rate=0.300000012, max_delta_step=0, max_depth=6,
-              min_child_weight=1, monotone_constraints='()',
-              n_estimators=100, n_jobs=4, num_parallel_tree=1,
-              objective='multi:softprob', random_state=0, reg_alpha=0,
-              reg_lambda=1, scale_pos_weight=None, subsample=1,
-              tree_method='exact', validate_parameters=1, verbosity=None)
+# XGBClassifier(base_score=0.5, booster='gbtree', colsample_bylevel=1,
+#               colsample_bynode=1, colsample_bytree=1, gamma=0, gpu_id=-1,
+#               importance_type='gain', interaction_constraints='',
+#               learning_rate=0.300000012, max_delta_step=0, max_depth=6,
+#               min_child_weight=1, monotone_constraints='()',
+#               n_estimators=100, n_jobs=4, num_parallel_tree=1,
+#               objective='multi:softprob', random_state=0, reg_alpha=0,
+#               reg_lambda=1, scale_pos_weight=None, subsample=1,
+#               tree_method='exact', validate_parameters=1, verbosity=None)
 
-y_pred = xgb.predict(x_test)
+# y_pred = xgb.predict(x_test)
 
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-print('Classification report')
-print(classification_report(y_test, y_pred))
+# from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+# print('Classification report')
+# print(classification_report(y_test, y_pred))
 
-# confusion_matrx
-# conf_matrix = confusion_matrix(y_test, y_pred)
-# fig, ax = plt.subplots(figsize=(11,11))
-# label_id_df = df[['labels', "Bio_personality"]].drop_duplicates()
-# sns.heatmap(conf_matrix, annot=True, cmap = 'Reds', fmt='d',xticklabels = label_id_df.labels.values,
-#            yticklabels = label_id_df.labels.values,square = True )
-# plt.ylabel('Actual')
-# plt.xlabel('Predicted')
-# plt.title('Confusion Matrix.')
-#plt.show()
+# # confusion_matrx
+# # conf_matrix = confusion_matrix(y_test, y_pred)
+# # fig, ax = plt.subplots(figsize=(11,11))
+# # label_id_df = df[['labels', "Bio_personality"]].drop_duplicates()
+# # sns.heatmap(conf_matrix, annot=True, cmap = 'Reds', fmt='d',xticklabels = label_id_df.labels.values,
+# #            yticklabels = label_id_df.labels.values,square = True )
+# # plt.ylabel('Actual')
+# # plt.xlabel('Predicted')
+# # plt.title('Confusion Matrix.')
+# #plt.show()
 
-print('Accuracy of the model {}'.format(accuracy_score(y_test, y_pred)))
-print("Y_test:",y_test[10:16])
-print("Y_pred:",y_pred[10:16])
+# # print('Accuracy of the model {}'.format(accuracy_score(y_test, y_pred)))
+# # print("Y_test:",y_test[10:16])
+# # print("Y_pred:",y_pred[10:16])

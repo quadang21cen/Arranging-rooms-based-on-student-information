@@ -67,11 +67,16 @@ class dataBASE():
         res = pd.DataFrame(columns= col,data= np_result)
         return res
             
-    def user_room(self):
+    def user_room(self,keep_data = False, start_room = 1,split_gender = False, room_size = 3):
+        cursor = self.connection.cursor()
+        if keep_data is False:
+            cursor.execute("TRUNCATE dormitory.student_room;")
+        # cursor = self.connection.cursor()
+        # query_dl = "DELETE FROM dormitory.student"
+        # cursor.execute(query_dl)
         df_student = self.get_students()
         AR_room = Rec_main.RS(df_student)
-        res = AR_room.arrange_ROOM()
-        cursor = self.connection.cursor()
+        res = AR_room.arrange_ROOM(room_size = room_size, start_room = start_room, split_gender = split_gender)
         # Insert Dataframe into SQL Server:
         for index, row in res.iterrows():
             cursor.execute("INSERT INTO student_room (id,room) values(%s, %s)", (row.id, row.room))
@@ -80,5 +85,5 @@ class dataBASE():
 
 if __name__ == '__main__':
     DBer = dataBASE()
-    DBer.user_room()
+    DBer.user_room(keep_data = False,start_room = 6)
     print("FINISH")

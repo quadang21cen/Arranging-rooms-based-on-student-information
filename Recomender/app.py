@@ -109,9 +109,9 @@ class App(customtkinter.CTk):
 
         self.start_from_label = customtkinter.CTkLabel(master=self.frame,
                                               text="Start from room",width=50)
-        self.start_from_label.place(relx=0.75, rely=0.6, anchor=tkinter.E)
+        self.start_from_label.place(relx=0.8, rely=0.6, anchor=tkinter.E)
 
-        self.start_from_entry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=100)
+        self.start_from_entry = customtkinter.CTkEntry(master=self.frame, corner_radius=6, width=70)
         self.start_from_entry.place(relx=0.85, rely=0.6, anchor=tkinter.CENTER)
 
         #self.slider_value = 0
@@ -158,19 +158,15 @@ class App(customtkinter.CTk):
                                                        value=8, text="8")
         self.room8Radio.place(relx=0.87, rely=0.70, anchor=tkinter.E)
 
-        self.room9Radio = customtkinter.CTkRadioButton(master=self.frame,
-                                                       variable=self.radio_var,
-                                                       value=9, text="9")
-        self.room9Radio.place(relx=0.97, rely=0.70, anchor=tkinter.E)
-
 
 
         self.timer = customtkinter.CTkLabel(master=self.frame,
                                                   text="")
         self.timer.place(relx=0.5, rely=0.75, anchor=tkinter.CENTER)
 
-        self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550)
+        self.progressbar = customtkinter.CTkProgressBar(master=self.frame, width=550, fg_color="#D35B58")
         self.progressbar.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
+        #self.progressbar.set(1)
 
 
         self.frame_1 = customtkinter.CTkFrame(master=self.frame, width=250, height=50, corner_radius=15, fg_color=("white", "gray38"),)
@@ -182,7 +178,7 @@ class App(customtkinter.CTk):
         self.save_image = self.load_image("\\test_images\\save.png", 20)
         self.bell_image = self.load_image("\\test_images\\bell.png", 20)
         self.add_folder_image = self.load_image("\\test_images\\add-folder.png", 20)
-        self.add_list_image = self.load_image("\\test_images\\add-folder.png", 20)
+        self.add_list_image = self.load_image("\\test_images\\—Pngtree—start icon_4629574.png", 20)
         self.add_user_image = self.load_image("\\test_images\\add-user.png", 20)
         self.chat_image = self.load_image("\\test_images\\chat.png", 20)
         self.home_image = self.load_image("\\test_images\\home.png", 20)
@@ -252,7 +248,7 @@ class App(customtkinter.CTk):
         
         # Vừa mới add
         start_from_room = self.start_from_entry.get()
-        if start_from_room is '':
+        if start_from_room == '':
             start_from_room = 1
         else:
             start_from_room = int(start_from_room)
@@ -278,7 +274,7 @@ class App(customtkinter.CTk):
              ('CSV file', '*.csv')]
         file = fd.asksaveasfile(filetypes = files, defaultextension = files)
         # print(file.name)
-        self.corr_rs.to_csv(file.name)
+        self.corr_rs.to_csv(file.name, index = False)
     def slider_value_get(self, val):
         self.slider_value = val
     def on_closing(self, event=0):

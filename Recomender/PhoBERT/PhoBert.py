@@ -97,10 +97,32 @@ class PhoBERT:
     return features
 
 if __name__ == '__main__':
+  from sklearn.metrics.pairwise import cosine_similarity
   # Gọi hàm text2Vec
-  data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Arranging-rooms-based-on-student-information\\pre_processing\\Data_Augmentation_10k.csv")
+  # data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Arranging-rooms-based-on-student-information\\pre_processing\\Data_Augmentation_10k.csv")
+  text1 = "thích đá bóng và nghe nhạc, xem phim"
+
+  text2 = "thích thể thao và giải trí"
   pho = PhoBERT()
   # print(data.iloc[1,6])
-  vectors = pho.text2vec(data.iloc[:50,6])
+  vectors = pho.text2vec([text1,text2])
+  print(cosine_similarity(vectors,vectors))
 
+
+
+
+  # import pandas as pd
+  # import numpy as np
+
+  # data = pd.read_csv('C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\FINAL_Data_set_FixHW.csv')
+
+  # corr_matrix = list
+  # refer_text = data['refer_roommate'].to_numpy()
+  # text_to = (data['Bio_personality'] + " " + data['hob_inter'] + " " + data['food_drink']).to_numpy()
+  # for i in range(0,len(refer_text)):
+  #     temp_arr = text_to
+  #     temp_arr[i] = refer_text[i]
+      
+
+  # print(text_to.to_numpy()[0])
   print("FINISH")

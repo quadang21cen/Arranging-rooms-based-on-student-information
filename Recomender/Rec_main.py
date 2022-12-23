@@ -51,6 +51,11 @@ class RS:
             corr_rs.append(row)
         return corr_rs
 
+    def corr_smoking(self,data):
+        data = data.replace(['Có','không',1],[0.5,0,0.5]).to_numpy()
+        corr = self.city_distance(data = data)
+        return np.array(corr) 
+
     def enumLs(self, lst, constract = False):
         ls = []
         for index,Val in zip(self.ID,lst):
@@ -73,6 +78,7 @@ class RS:
         return to_df
 
     def grouping(self,np_data,max_size = 4,constract = False):
+        np.transpose(np_data)
         len_data = len(np_data) - 1
         in_room = []
         dorm = []
@@ -96,55 +102,87 @@ class RS:
         print(dorm)
         return dorm
 
+    def refer_similarity(self, data):
+        
+        vec_refer = self.Pho_BERT.text2vec(data['refer_roommate'].to_list())
+        combine_text = (data['Bio_personality'] + " " + data['hob_inter'] + " " + data['food_drink']).to_list()
+        vec_combine = self.Pho_BERT.text2vec(combine_text)
+        len_data = len(combine_text)
+        final_matrix = []
+        for i in range(0,len_data):
+            temp_combine = vec_combine
+            temp_combine[i] = vec_refer[i]
+            final_matrix.append(self.corr_cosine(temp_combine)[i])
+        return np.array(final_matrix)
+
 
     def compute_all_corr(self, W_hom = 0.1, W_Bio_per=0.2,W_FaD= 0.2, W_hob = 0.2, W_ref = 0.2, W_cp = 0.2, room_size = 3):
+        
         list_city = self.data["Hometown"].tolist()
         CORR_city = self.normalized(self.city_distance(self.trans_city.get_all(list_city)))
-        del list_city
+        CORR_city = abs(1 - CORR_city)
+
+        FINAL_MATRIX = CORR_city * W_hom
+        del CORR_city, list_city
+
 
         # Bio_personality
         bio = self.data["Bio_personality"].to_list()
         VEC_bio = self.Pho_BERT.text2vec(bio)
         CORR_bio = self.check_text(self.corr_cosine(VEC_bio),bio) 
-        del VEC_bio, bio
+
+        FINAL_MATRIX = FINAL_MATRIX + CORR_bio * W_Bio_per
+        del VEC_bio, bio, CORR_bio
 
         # hob_inter
         hob = self.data["hob_inter"]
         VEC_hob = self.Pho_BERT.text2vec(hob)
         CORR_hob = self.check_text(self.corr_cosine(VEC_hob),hob)
-        del VEC_hob, hob
+        
 
-        #Refer roommate
-        ref = self.data["refer_roommate"]
-        Vec_ref = self.Pho_BERT.text2vec(ref)
-        CORR_Ref = self.check_text(self.corr_cosine(Vec_ref),ref)
-        del Vec_ref, ref
+        FINAL_MATRIX = FINAL_MATRIX + CORR_hob * W_hob
+        del VEC_hob, hob, CORR_hob
+
+        CORR_Ref = self.refer_similarity(data=self.data)
+        FINAL_MATRIX = FINAL_MATRIX + CORR_Ref * W_ref
+        
+        del CORR_Ref
 
         #food_drink
         FaD = self.data["food_drink"]
         Vec_FaD = self.Pho_BERT.text2vec(FaD)
         CORR_FaD = self.check_text(self.corr_cosine(Vec_FaD),FaD)
-        # return CORR_FaD
+
+        FINAL_MATRIX = FINAL_MATRIX + CORR_FaD * W_FaD
+        del FaD, Vec_FaD, CORR_FaD
+
         # Cleanliess and Privacy
         VEC_cp = self.normalized(self.data[["Cleanliess","Privacy"]].to_numpy())
         CORR_cp = self.corr_cosine(VEC_cp)
-        
 
-        res = CORR_city*W_hom + CORR_bio*W_Bio_per + CORR_FaD*W_FaD + CORR_hob*W_hob + CORR_Ref*W_ref + CORR_cp*W_cp + CORR_FaD*0.1
-        # df_corr = pd.DataFrame(data =res ,index=self.data.index,columns=self.data.index)
-        # # df_corr.to_csv("Corr_Matrix\\new_corr_noname.csv")
+        FINAL_MATRIX = FINAL_MATRIX + CORR_cp * W_cp
+        del VEC_cp, CORR_cp
+        #smorking corr
+        VEC_smk = self.data['smoking']
+        CORR_smk = self.corr_smoking(data=VEC_smk)
+        FINAL_MATRIX = FINAL_MATRIX*0.7 + CORR_smk*0.3
+
+        # res = CORR_city*W_hom + CORR_bio*W_Bio_per + CORR_FaD*W_FaD + CORR_hob*W_hob + CORR_Ref*W_ref + CORR_cp*W_cp + CORR_FaD*0.1
+        # df_corr = pd.DataFrame(data =FINAL_MATRIX ,index=self.data.index,columns=self.data.index)
+        # df_corr.to_csv("Corr_Matrix\\CHECK_CORR.csv")
         # df_corr.to_csv("DEMO.csv")
-        return res
+        return FINAL_MATRIX
 
     def normalized(self,vec):
         min_max_scaler = preprocessing.MinMaxScaler()
         return min_max_scaler.fit_transform(vec)
 
-    def arrange_ROOM(self,weight=[0.1,0.2,0.2,0.2,0.1,0,1], split_gender = False, room_size = 3, constract = False):     # run this funtion to finish the project
+    def arrange_ROOM(self,weight=[0.1,0.2,0.2,0.2,0.1,0,1], split_gender = False, room_size = 3, constract = False,start_room = 1):     # run this funtion to finish the project
         if split_gender is False:
             df_corr = self.compute_all_corr()
             df_group = self.grouping(df_corr,max_size=room_size,constract = constract)
-            to_ROOM = self.to_Room(df_group,start_with=1)
+            to_ROOM = self.to_Room(df_group,start_with=start_room)
+            to_ROOM.sort_values('id')
             to_ROOM.to_csv("Result\\Room_result_split_FALSE.csv",index = False)
             return to_ROOM
         else:
@@ -153,7 +191,7 @@ class RS:
             self.ID = self.data.iloc[:,0]
             df_corr = self.compute_all_corr()
             df_group = self.grouping(df_corr,max_size=room_size,constract = constract)
-            ROOM_female = self.to_Room(df_group,start_with= 5)
+            ROOM_female = self.to_Room(df_group,start_with= start_room)
             # ROOM_female.to_csv("Result\\Room_result_FEMALE.csv",index = False)
 
             self.data = template[template['Sex'] == 'Nam']
@@ -164,7 +202,6 @@ class RS:
             # ROOM_male.to_csv("Result\\Room_result_MALE.csv",index = False)
             final_ROOM = pd.concat([ROOM_male,ROOM_female]).sort_values('id')
             final_ROOM.to_csv("Result\\Room_result_split_TRUE.csv")
-            
             print(final_ROOM)
             return final_ROOM
             
@@ -199,19 +236,15 @@ def run(data):
     Rs_male = RS(male_df)
     file_male = Rs_male.arrange_ROOM()
     file_male.to_csv("file.csv")
-    # file_male.to_csv("Result\\Room_result_MALE.csv",index = False)
-
-    # Rs_female = RS(female_df)
-    # Rs_female.arrange_ROOM().to_csv("Result\\Room_result_FEMALE.csv",index = False)
         
 
 if __name__ == "__main__":
     print("START...")
     import time
     st = time.time()
-    data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\FINAL_Data_set_FixHW.csv", encoding='utf-8')
+    data = pd.read_csv("C:\\Users\\quach\\Desktop\\Personal\\FPT University\\SEMESTER 9\\Dataset\\FINAL_Data_set_FixHW_50.csv", encoding='utf-8')
     RS = RS(data)
-    res = RS.arrange_ROOM(split_gender = True,constract = False)
+    res = RS.arrange_ROOM(split_gender = False, room_size = 3, constract = False,start_room = 1)
 
     et = time.time()
     elapsed_time = et - st
